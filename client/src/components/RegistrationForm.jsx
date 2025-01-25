@@ -1,6 +1,36 @@
 import { Link } from "react-router";
+import { useState } from "react";
+import { createUser } from "../services/Api";
+
 
 export default function RegistrationForm() {
+const [userItems, setUserItems] = useState({role: 'Teacher', school: '', fullname: '', email: '', password: ''});
+
+const handleChange = (e)=>{
+  const { name, value } = e.target;
+  setUserItems(
+      {
+      ...userItems,
+      [name]: value,
+  })
+}
+
+// Handle function to submit
+async function handleSubmit(e) {
+  e.preventDefault();
+    try {
+      const response = await createUser(userItems);
+      setUserItems({
+        role: '', school: '', fullname: '', email: '', password: '',
+      });
+
+      
+      console.log(response);
+    } catch (error) {
+      console.log({message: error});
+    }
+}
+
   return (
     <>
       <div className="flex relative z-20 w-full items-center justify-center min-h-screen bg-gray-100 bg-gradient-to-r from-blue-400 to-purple-500 p-4">
@@ -12,37 +42,48 @@ export default function RegistrationForm() {
           </p>
 
           {/* Form */}
-          <form className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-            {/* Role Selection */}
-            <div className="sm:col-span-2">
+          <form onSubmit={handleSubmit} className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+        {/* School Name */}
+          <div className="sm:col-span-2">
               <label
                 className="block text-sm font-medium text-gray-700 mb-1"
                 htmlFor="role"
               >
-                Role
+                School
               </label>
               <select
-                id="role"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="principal">Principal</option>
-                <option value="teacher">Teacher</option>
-              </select>
+               onChange={handleChange}
+               value={userItems.school}
+               name="school"
+              id="school"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select School</option>
+              {[...Array(28)].map((_, index) => (
+                <option key={index + 1} value={`school${index + 1}`}>
+                  School {index + 1}
+                </option>
+              ))}
+            </select>
             </div>
 
-            {/* School Name */}
-            <div className="sm:col-span-2">
+           {/* Full Name */}
+           <div className="col-span-1">
               <label
                 className="block text-sm font-medium text-gray-700 mb-1"
-                htmlFor="school"
+                htmlFor="name"
               >
-                School Name
+                Role
               </label>
               <input
+                onChange={handleChange}
+                name="role"
+                value={userItems.role}
+                disabled
                 type="text"
-                id="school"
+                id="name"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter your school name"
+                placeholder="Enter your full name"
               />
             </div>
 
@@ -55,8 +96,11 @@ export default function RegistrationForm() {
                 Full Name
               </label>
               <input
+                onChange={handleChange}
+                name="fullname"
+                value={userItems.fullname}
                 type="text"
-                id="name"
+                id="fullname"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter your full name"
               />
@@ -71,6 +115,9 @@ export default function RegistrationForm() {
                 Email
               </label>
               <input
+                onChange={handleChange}
+                name="email"
+                value={userItems.email}
                 type="email"
                 id="email"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -87,6 +134,9 @@ export default function RegistrationForm() {
                 Password
               </label>
               <input
+                onChange={handleChange}
+                name="password"
+                value={userItems.password}
                 type="password"
                 id="password"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -95,7 +145,7 @@ export default function RegistrationForm() {
             </div>
 
             {/* Confirm Password */}
-            <div className="col-span-1">
+            {/* <div className="col-span-1">
               <label
                 className="block text-sm font-medium text-gray-700 mb-1"
                 htmlFor="confirm-password"
@@ -103,12 +153,15 @@ export default function RegistrationForm() {
                 Confirm Password
               </label>
               <input
+                onChange={handleChange}
+                name="confirmed_password"
+                value={userItems.confirm_password}
                 type="password"
                 id="confirm-password"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Confirm your password"
               />
-            </div>
+            </div> */}
 
             {/* Submit Button */}
             <div className="sm:col-span-2">
@@ -126,7 +179,7 @@ export default function RegistrationForm() {
             <span className="text-gray-600 text-sm">
               Already have an account?{" "}
               <Link
-                to={"/"}
+                to={"/login"}
                 className="text-blue-600 underline hover:text-blue-700"
               >
                 Login

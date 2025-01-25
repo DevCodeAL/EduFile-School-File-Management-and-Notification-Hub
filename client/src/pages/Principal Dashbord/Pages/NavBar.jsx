@@ -1,5 +1,7 @@
 import { Link } from "react-router"
+
 export default function NavBar(){
+
     return(
         <>
             <aside className="fixed z-10 top-0 left-0 h-full w-64 bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-lg flex flex-col">
@@ -14,7 +16,7 @@ export default function NavBar(){
                 <ul className="space-y-4">
                 <li>
                     <Link
-                    to={'/principal_dashboard'} 
+                    to={'/principals_dashboard'} 
                     className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-white/10"
                     >
                     <span className="text-white text-sm font-medium">Dashboard</span>
