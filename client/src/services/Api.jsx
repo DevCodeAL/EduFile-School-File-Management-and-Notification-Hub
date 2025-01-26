@@ -14,7 +14,6 @@ export const createUser = async (userData) => {
 };
 
 // Users Login
-
 const API_Login = "http://localhost:5000/api/user";
 export const adminLogin = async (userItem)=> {
     try {
@@ -27,7 +26,7 @@ export const adminLogin = async (userItem)=> {
 }
 
 
-// Get Profile API for Admin
+// Get Profile Users Principals and Teachers
 const API_Admin = 'http://localhost:5000/api/user-profile';
 
 export const getUserAdmin = async (authToken) => {
@@ -41,3 +40,30 @@ export const getUserAdmin = async (authToken) => {
     throw error;
   }
 };
+
+
+// Associte Teacher Data
+const API_Associte = 'http://localhost:5000/api/associate';
+
+export const createAssociate = async (userData)=>{
+  try{
+      const response = await axios.post(API_Associte, userData);
+      return response.data;
+  }catch(error){
+    console.error("No teachers associate with principal", error);
+    throw error;
+  }
+}
+
+const API_Files = 'http://localhost:5000/api/files';
+
+export const getAllFiles = async (files)=> {
+    try {
+      const response = await axios.get(API_Files, files);
+      return response.data;
+      
+    } catch (error) {
+      console.error("No files exist", error);
+      throw error;
+    }
+}

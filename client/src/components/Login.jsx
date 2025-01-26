@@ -17,6 +17,7 @@ const HandleOnchange = (e)=> {
   ...isUser,
    [name]: value,
  });
+
 };
 
 async function HandleSubmit(e) {

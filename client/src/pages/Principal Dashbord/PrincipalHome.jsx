@@ -1,71 +1,236 @@
-import React from "react";
-import Header from "./Modal/Header";
+import React, { useState } from "react";
+import Header from "../../components/Header";
+import ProfileModal from "../../components/Profile";
 
 const PrincipalDashboard = () => {
+  const [isOpen, setOpen] = useState(false);
+  const [isFormOpen, setFormOpen] = useState(false); // State for form modal
+  const [formData, setFormData] = useState({ description: "", 
+    uploadedBy: "", 
+    quarter: "1st Quarter",
+    file: null,
+  });
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    
+    // Define allowed types
+    const allowedTypes = {
+      "image/*": [".jpeg", ".jpg", ".png", ".gif", ".bmp", ".tiff", ".webp"],
+      "video/*": [".mp4", ".mov", ".avi", ".mkv", ".wmv", ".flv"],
+      "application/pdf": [".pdf"],
+      "application/msword": [".doc"],
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
+      "application/vnd.ms-powerpoint": [".ppt"],
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation": [".pptx"],
+    };
+  
+    // If no file is selected, return early
+    if (!file) return;
+  
+    // Check if the file type is allowed
+    const fileType = Object.keys(allowedTypes).find((key) =>
+      allowedTypes[key].includes(file.name.substring(file.name.lastIndexOf(".")).toLowerCase())
+    );
+  
+    if (!fileType) {
+      alert("Invalid file type. Please upload a valid file.");
+      return;
+    }
+  
+    // Update the formData state with the selected file
+    setFormData((prev) => ({ ...prev, file }));
+  };
+  
+  
+// File submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // setLoading(true);
+
+    const data = new FormData();
+    data.append("description", formData.description);
+    data.append("uploadedBy", formData.uploadedBy);
+    data.append("quarter", formData.quarter);
+    data.append("file", formData.file);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/stats", {
+        method: "POST",
+        body: data,
+      });
+
+      if (!response.ok) throw new Error("File upload failed");
+      // setTimeout(()=>{
+      //     setLoading(false);
+      //     setIsClose(closeEvent);
+      // }, 2000);
+    } catch (error) {
+      alert(error.message);
+    }
+};
+
+
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-    {/* Main Content */}
-    <main className="flex-1 p-6 ml-64">
-      {/* Header */}
+      {/* Main Content */}
+      <main className="flex-1 p-6 ml-64">
+        {/* Header */}
         <h1 className="text-2xl font-bold text-gray-700">Principal Dashboard</h1>
-        <Header/>
+        <Header setOpen={() => setOpen(true)} />
 
-      {/* Stats Section */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white shadow-lg rounded-lg p-4">
-          <h2 className="text-gray-500 text-sm">Total Teachers</h2>
-          <p className="text-2xl font-bold text-blue-500">123</p>
-        </div>
-        <div className="bg-white shadow-lg rounded-lg p-4">
-          <h2 className="text-gray-500 text-sm">Pending Applications</h2>
-          <p className="text-2xl font-bold text-orange-500">5</p>
-        </div>
-        <div className="bg-white shadow-lg rounded-lg p-4">
-          <h2 className="text-gray-500 text-sm">Files Uploaded</h2>
-          <p className="text-2xl font-bold text-green-500">47</p>
-        </div>
-      </section>
-  
-      {/* Upload Files Section */}
-      <section id="upload" className="mt-8 bg-white shadow-lg rounded-lg p-6">
-        <h2 className="text-lg font-bold text-gray-700">Upload Files</h2>
-        <div className="mt-4 border-dashed border-2 border-gray-300 p-6 rounded-lg flex flex-col items-center justify-center">
-          <p className="text-gray-500">Drag and drop files here</p>
-          <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-            Browse Files
+        {isOpen && <ProfileModal setClose={() => setOpen(!true)} />}
+
+        {/* Stats Section */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white shadow-lg rounded-lg p-4">
+            <h2 className="text-gray-500 text-sm">Total Teachers</h2>
+            <p className="text-2xl font-bold text-blue-500">123</p>
+          </div>
+          <div className="bg-white shadow-lg rounded-lg p-4">
+            <h2 className="text-gray-500 text-sm">Pending Applications</h2>
+            <p className="text-2xl font-bold text-orange-500">5</p>
+          </div>
+          <div className="bg-white shadow-lg rounded-lg p-4">
+            <h2 className="text-gray-500 text-sm">Files Uploaded</h2>
+            <p className="text-2xl font-bold text-green-500">47</p>
+          </div>
+        </section>
+
+       {/* Upload Files Section */}
+        <section
+          id="upload"
+          className="flex flex-col items-center justify-center border-dashed border-2 border-gray-300 mt-8 bg-white shadow-lg rounded-lg p-6 "
+        >
+          <h2 className="text-lg font-bold text-gray-700 mb-4">Upload Files</h2>
+          <button
+            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-lg font-semibold"
+            onClick={() => setFormOpen(true)}
+          >
+            Add New File
           </button>
-        </div>
-      </section>
-  
-      {/* Pending Applications Section */}
-      <section id="teachers" className="mt-8 bg-white shadow-lg rounded-lg p-6">
+        </section>
+
+
+        {/* Form Modal */}
+        {isFormOpen && (
+          <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-1/3">
+              <h2 className="text-xl font-bold text-gray-700 mb-4">Add New File</h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Description */}
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    className="w-full border rounded-lg px-3 py-2 text-gray-700"
+                    rows="3"
+                    required
+                  ></textarea>
+                </div>
+
+                {/* Uploaded By */}
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Uploaded By
+                  </label>
+                  <input
+                    type="text"
+                    name="uploadedBy"
+                    value={formData.uploadedBy}
+                    onChange={handleInputChange}
+                    className="w-full border rounded-lg px-3 py-2 text-gray-700"
+                    placeholder="Enter uploader name"
+                    required
+                  />
+                </div>
+
+                {/* Quarter Selection */}
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Select Quarter
+                  </label>
+                  <select
+                    name="quarter"
+                    value={formData.quarter}
+                    onChange={handleInputChange}
+                    className="w-full border rounded-lg px-3 py-2 text-gray-700"
+                  >
+                    <option value="1st Quarter">1st Quarter</option>
+                    <option value="2nd Quarter">2nd Quarter</option>
+                    <option value="3rd Quarter">3rd Quarter</option>
+                    <option value="4th Quarter">4th Quarter</option>
+                  </select>
+                </div>
+                {/* Input Element */}
+              <input
+                type="file"
+                name="file"
+                accept="image/*,video/*,.pdf,.doc,.docx,.pptx,.ppt"
+                onChange={handleFileChange}
+              />
+
+                {/* Form Buttons */}
+                <div className="flex justify-end space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => setFormOpen(false)}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  >
+                    Submit
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+<section id="teachers" className="mt-8 bg-white shadow-lg rounded-lg p-6">
         <h2 className="text-xl font-bold text-gray-700 mb-4">List of Teachers</h2>
         <table className="w-full text-left border-collapse">
-            <thead>
+          <thead>
             <tr className="bg-gray-200">
-                <th className="border border-gray-300 px-4 py-2">Name</th>
-                <th className="border border-gray-300 px-4 py-2">Email</th>
-                <th className="border border-gray-300 px-4 py-2">Status</th>
-                <th className="border border-gray-300 px-4 py-2">Actions</th>
+              <th className="border border-gray-300 px-4 py-2">Name</th>
+              <th className="border border-gray-300 px-4 py-2">Email</th>
+              <th className="border border-gray-300 px-4 py-2">Status</th>
+              <th className="border border-gray-300 px-4 py-2">Actions</th>
             </tr>
-            </thead>
-            <tbody>
-            {/* Example Row 1 */}
+          </thead>
+          <tbody>
             <tr className="hover:bg-gray-100">
-                <td className="border border-gray-300 px-4 py-2">John Doe</td>
-                <td className="border border-gray-300 px-4 py-2">john@example.com</td>
-                <td className="border border-gray-300 px-4 py-2 text-green-500 font-semibold">Active</td>
-                <td className="border border-gray-300 px-4 py-2">
+              <td className="border border-gray-300 px-4 py-2">John Doe</td>
+              <td className="border border-gray-300 px-4 py-2">john@example.com</td>
+              <td className="border border-gray-300 px-4 py-2 text-green-500 font-semibold">
+                Active
+              </td>
+              <td className="border border-gray-300 px-4 py-2">
                 <button className="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                    View
+                  View
                 </button>
-                </td>
+              </td>
             </tr>
-            </tbody>
+          </tbody>
         </table>
         </section>
-    </main>
-  </div>  
+      </main>
+    </div>
   );
 };
 

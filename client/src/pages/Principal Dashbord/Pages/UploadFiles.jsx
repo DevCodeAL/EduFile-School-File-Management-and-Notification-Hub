@@ -1,4 +1,24 @@
+import { useEffect, useState } from "react";
+import { getAllFiles } from "../../../services/Api";
+
 export default function UploadFiles() {
+const [files, setFiles] = useState([]);
+
+const fetchFiles = async ()=>{
+    try {
+      const response = await getAllFiles(files);
+      setFiles(response);
+      console.log(response);
+    } catch (error) {
+      console.error("Failed to fetch posts:", error);
+    }
+}
+
+useEffect(()=>{
+fetchFiles();
+}, []);
+
+
     return (
       <>
         <div className="flex flex-col min-h-screen bg-gray-100">
@@ -16,6 +36,7 @@ export default function UploadFiles() {
             <div className="text-sm text-gray-500">{new Date().toLocaleDateString()}</div>
           </div>
         </header>
+
             {/* Videos Section */}
             <section className="mb-8">
               <h2 className="text-2xl font-bold text-gray-700 mb-4">Title Videos</h2>

@@ -18,6 +18,7 @@ const authMiddleware = (req, res, next) => {
     }
 
     req.userId = decoded.id; // Save user ID to request object for further use
+    req.role = decoded.role;
     next();
   });
 };

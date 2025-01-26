@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
+import Header from "../../components/Header";
+import ProfileModal from "../../components/Profile";
 
 const TeacherDashboard = () => {
   const [notifications, setNotifications] = useState([]);
   const [files, setFiles] = useState([]);
+  const [isOpen, setOpen] = useState(false);
 
   useEffect(() => {
     setNotifications([
@@ -20,21 +23,11 @@ const TeacherDashboard = () => {
     <div className="flex flex-col min-h-screen bg-gray-100">
     {/* Main Content */}
     <main className="flex-1 p-6 ml-64">
-      {/* Main Content */}
-        <header className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-700">Welcome, Teacher!</h1>
-          <div className="flex flex-col items-center space-x-4">
-            <div className="border border-indigo-600 rounded-full w-14 h-14 overflow-hidden">
-            <img
-              className="w-full h-full object-cover"
-              src="/image/Leomar .jpg"
-              alt="User Profile"
-            />
-            </div>
-            <div className="text-sm text-gray-500">{new Date().toLocaleDateString()}</div>
-          </div>
-        </header>
+        <h1 className="text-2xl font-bold text-gray-700">Welcome, Teacher!</h1>
+        <Header setOpen={()=> setOpen(true)}/>
 
+        {isOpen && <ProfileModal setClose={()=> setOpen(!true)}/>}
+          
         {/* Notifications Section */}
         <section className="mb-8">
           <h2 className="text-lg font-bold text-gray-700">Recent Notifications</h2>

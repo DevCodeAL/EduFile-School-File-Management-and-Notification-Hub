@@ -1,10 +1,16 @@
 import { Link } from "react-router";
 import { useState } from "react";
-import { createUser } from "../services/Api";
+import { createUser, createAssociate  } from "../services/Api";
+import { useNavigate } from "react-router";
 
 
 export default function RegistrationForm() {
-const [userItems, setUserItems] = useState({role: 'Teacher', school: '', fullname: '', email: '', password: ''});
+  const navigate = useNavigate();
+const [userItems, setUserItems] = useState({role: 'teacher',
+   school: '',
+    fullname: '',
+     email: '',
+      password: ''});
 
 const handleChange = (e)=>{
   const { name, value } = e.target;
@@ -20,11 +26,11 @@ async function handleSubmit(e) {
   e.preventDefault();
     try {
       const response = await createUser(userItems);
+      await createAssociate();
       setUserItems({
         role: '', school: '', fullname: '', email: '', password: '',
       });
-
-      
+      navigate('/login');
       console.log(response);
     } catch (error) {
       console.log({message: error});
