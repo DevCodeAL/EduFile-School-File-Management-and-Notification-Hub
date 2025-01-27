@@ -282,7 +282,7 @@ router.post('/user', async (req, res) => {
 
     // Upload files , Pdf, Docx, Doc Image, Videos
 router.post("/stats", upload.single("file"), async (req, res) => {
-    const {  description, uploadedBy, quarter, } = req.body;
+    const {  description, uploadedBy, grade, subject, quarter, } = req.body;
     console.log('Incoming data', req.body);
     console.log("File Data:", req.file);
 
@@ -311,6 +311,8 @@ router.post("/stats", upload.single("file"), async (req, res) => {
       const newItem = new Files({
         description,
        uploadedBy,
+       grade,
+       subject,
        quarter,
         files: fileData,
       });
