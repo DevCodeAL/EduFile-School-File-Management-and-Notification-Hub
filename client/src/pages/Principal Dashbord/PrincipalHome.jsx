@@ -1,16 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../../components/Header";
 import ProfileModal from "../../components/Profile";
+import UploadLoading from "../../Success/UploadLoading";
 
 const PrincipalDashboard = () => {
+  const [isGradesOpen, setGradesOpen] = useState(false);
+  const [isSubjectsOpen, setSubjectsOpen] = useState(false);
+  const [isQuartersOpen, setQuartersOpen] = useState(false);
+
+  const [selectedGrade, setSelectedGrade] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedQuarter, setSelectedQuarter] = useState("");
+
+
+  const [isLoading, setLoading] = useState(false);
   const [isOpen, setOpen] = useState(false);
   const [isFormOpen, setFormOpen] = useState(false); // State for form modal
-  const [formData, setFormData] = useState({ description: "", 
+  const [formData, setFormData] = useState({ 
+    description: "", 
     uploadedBy: "", 
-    quarter: "1st Quarter",
     file: null,
+    grade: selectedGrade,
+    subject: selectedSubject,
+     quarter: selectedQuarter,
   });
 
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      grade: selectedGrade,
+      subject: selectedSubject,
+      quarter: selectedQuarter,
+    }));
+  }, [selectedGrade, selectedSubject, selectedQuarter]);
+
+  
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -19,52 +43,36 @@ const PrincipalDashboard = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    
-    // Define allowed types
-    const allowedTypes = {
-      "image/*": [".jpeg", ".jpg", ".png", ".gif", ".bmp", ".tiff", ".webp"],
-      "video/*": [".mp4", ".mov", ".avi", ".mkv", ".wmv", ".flv"],
-      "application/pdf": [".pdf"],
-      "application/msword": [".doc"],
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
-      "application/vnd.ms-powerpoint": [".ppt"],
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation": [".pptx"],
-    };
-  
-    // If no file is selected, return early
     if (!file) return;
-  
-    // Check if the file type is allowed
-    const fileType = Object.keys(allowedTypes).find((key) =>
-      allowedTypes[key].includes(file.name.substring(file.name.lastIndexOf(".")).toLowerCase())
-    );
-  
-    if (!fileType) {
-      alert("Invalid file type. Please upload a valid file.");
-      return;
-    }
-  
-    // Update the formData state with the selected file
     setFormData((prev) => ({ ...prev, file }));
   };
   
   
+  
 // File submission
   const handleSubmit = async (e) => {
+    setLoading(true);
     e.preventDefault();
     // setLoading(true);
 
     const data = new FormData();
     data.append("description", formData.description);
     data.append("uploadedBy", formData.uploadedBy);
-    data.append("quarter", formData.quarter);
     data.append("file", formData.file);
+    data.append("grade", formData.grade);
+    data.append("subject", formData.subject);
+    data.append("quarter", formData.quarter);
 
     try {
       const response = await fetch("http://localhost:5000/api/stats", {
         method: "POST",
         body: data,
       });
+
+      setTimeout(()=>{
+        setFormOpen(false);
+      setLoading(false);
+      }, 1000);
 
       if (!response.ok) throw new Error("File upload failed");
       // setTimeout(()=>{
@@ -87,6 +95,11 @@ const PrincipalDashboard = () => {
         <Header setOpen={() => setOpen(true)} />
 
         {isOpen && <ProfileModal setClose={() => setOpen(!true)} />}
+
+      {/* Upload Loading */}
+       {isLoading && (
+           <UploadLoading/>
+       )}
 
         {/* Stats Section */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -156,30 +169,143 @@ const PrincipalDashboard = () => {
                   />
                 </div>
 
-                {/* Quarter Selection */}
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Select Quarter
-                  </label>
-                  <select
-                    name="quarter"
-                    value={formData.quarter}
-                    onChange={handleInputChange}
-                    className="w-full border rounded-lg px-3 py-2 text-gray-700"
+                
+      <div className="inline-block text-left">
+        <button
+          id="multiLevelDropdownButton"
+          onClick={() => setGradesOpen(!isGradesOpen)}
+          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          type="button"
+        >
+          Dropdown button
+          <svg
+            className="w-2.5 h-2.5 ml-3"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 10 6"
+          >
+            <path
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="m1 1 4 4 4-4"
+            />
+          </svg>
+        </button>
+
+        {/* Grades Dropdown */}
+        {isGradesOpen && (
+          <div
+            id="multi-dropdown"
+            className="z-10 absolute bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700"
+          >
+            <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
+              {["Kindergarten", "Grade 1", "Grade 2"].map((grade) => (
+                <li key={grade}>
+                  <button
+                    onClick={() => {
+                      setSelectedGrade(grade);
+                      setSubjectsOpen(true);
+                    }}
+                    className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                   >
-                    <option value="1st Quarter">1st Quarter</option>
-                    <option value="2nd Quarter">2nd Quarter</option>
-                    <option value="3rd Quarter">3rd Quarter</option>
-                    <option value="4th Quarter">4th Quarter</option>
-                  </select>
-                </div>
-                {/* Input Element */}
+                    {grade}
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            {/* Subjects Dropdown */}
+            {isSubjectsOpen && (
+              <div
+                id="subjectDropdown"
+                className="z-10 absolute left-full top-0 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700"
+              >
+                <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
+                  {["English", "Filipino", "Science", "Math"].map((subject) => (
+                    <li key={subject}>
+                      <button
+                        onClick={() => {
+                          setSelectedSubject(subject);
+                          setQuartersOpen(true);
+                        }}
+                        className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                      >
+                        {subject}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Quarters Dropdown */}
+                {isQuartersOpen && (
+                  <div
+                    id="quartersDropdown"
+                    className="z-10 absolute left-full top-0 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700"
+                  >
+                    <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
+                      {["1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"].map(
+                        (quarter) => (
+                          <li key={quarter}>
+                            <button
+                              onClick={() => setSelectedQuarter(quarter)}
+                              className="block px-4 py-2 hover:bg-gray-100 hover:underline dark:hover:bg-gray-600 dark:hover:text-white"
+                            >
+                              {quarter}
+                            </button>
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Display Selected Options */}
+      <div className="mt-4">
+        <p>Selected Grade: {selectedGrade}</p>
+        <p>Selected Subject: {selectedSubject}</p>
+        <p>Selected Quarter: {selectedQuarter}</p>
+      </div>
+              
+               {/* Input Element */}
+            <div className="w-full border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 cursor-pointer hover:bg-gray-100 p-5">
+              <label
+                htmlFor="fileInput"
+                className="flex flex-col items-center cursor-pointer"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 16l4-4m0 0l4-4m-4 4h12M13 5h5a2 2 0 012 2v10a2 2 0 01-2 2h-5m-7-7l-4 4m0 0l4 4m-4-4h12"
+                  />
+                </svg>
+                <p className="text-gray-600 font-medium mt-2 text-sm">Drag & drop your file here</p>
+                <p className="text-gray-400 text-xs">or click to browse</p>
+              </label>
               <input
+                id="fileInput"
                 type="file"
                 name="file"
                 accept="image/*,video/*,.pdf,.doc,.docx,.pptx,.ppt"
                 onChange={handleFileChange}
+                className="hidden"
               />
+            </div>
 
                 {/* Form Buttons */}
                 <div className="flex justify-end space-x-4">

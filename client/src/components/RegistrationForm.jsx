@@ -2,10 +2,12 @@ import { Link } from "react-router";
 import { useState } from "react";
 import { createUser, createAssociate  } from "../services/Api";
 import { useNavigate } from "react-router";
+import Loading from "../Success/Loading";
 
 
 export default function RegistrationForm() {
   const navigate = useNavigate();
+  const [isLoading, setLoading] = useState(false);
 const [userItems, setUserItems] = useState({role: 'teacher',
    school: '',
     fullname: '',
@@ -23,6 +25,7 @@ const handleChange = (e)=>{
 
 // Handle function to submit
 async function handleSubmit(e) {
+  setLoading(true);
   e.preventDefault();
     try {
       const response = await createUser(userItems);
@@ -30,7 +33,10 @@ async function handleSubmit(e) {
       setUserItems({
         role: '', school: '', fullname: '', email: '', password: '',
       });
-      navigate('/login');
+      setTimeout(()=>{
+        navigate('/login');
+      }, 2000);
+    
       console.log(response);
     } catch (error) {
       console.log({message: error});
@@ -39,8 +45,22 @@ async function handleSubmit(e) {
 
   return (
     <>
-      <div className="flex relative z-20 w-full items-center justify-center min-h-screen bg-gray-100 bg-gradient-to-r from-blue-400 to-purple-500 p-4">
-        <div className="w-full sm:w-5/6 max-w-lg bg-white shadow-lg rounded-lg p-6 sm:p-8">
+      <div className="flex w-full h-screen items-center justify-center relative overflow-hidden">
+         {/* Background Video */}
+    <video 
+      className="absolute top-0 left-0 w-full h-full object-cover" 
+      src="/video/edu.mp4" 
+      autoPlay 
+      muted 
+      loop
+    ></video>
+
+          {/* Loading for Registration */}
+         {isLoading && (
+           <Loading/>
+         )}
+
+        <div className="relative z-10 h-auto w-96  bg-gray-300/50 backdrop-blur-md  sm:w-5/6 max-w-lg shadow-lg rounded-lg p-6 sm:p-8 ">
           {/* Header */}
           <h2 className="text-2xl font-bold text-gray-700 text-center">Registration</h2>
           <p className="text-sm text-gray-500 text-center mt-2">
@@ -50,7 +70,7 @@ async function handleSubmit(e) {
           {/* Form */}
           <form onSubmit={handleSubmit} className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
         {/* School Name */}
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-2 border-b-2  border-blue-500">
               <label
                 className="block text-sm font-medium text-gray-700 mb-1"
                 htmlFor="role"
@@ -62,7 +82,8 @@ async function handleSubmit(e) {
                value={userItems.school}
                name="school"
               id="school"
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+             className="w-full bg-transparent border-none text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-blue-600"
             >
               <option value="">Select School</option>
               {[...Array(28)].map((_, index) => (
@@ -74,7 +95,7 @@ async function handleSubmit(e) {
             </div>
 
            {/* Full Name */}
-           <div className="col-span-1">
+           <div className="col-span-1 border-b-2 border-blue-500">
               <label
                 className="block text-sm font-medium text-gray-700 mb-1"
                 htmlFor="name"
@@ -88,13 +109,14 @@ async function handleSubmit(e) {
                 disabled
                 type="text"
                 id="name"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-transparent border-none text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-blue-600"
                 placeholder="Enter your full name"
+                required
               />
             </div>
 
             {/* Full Name */}
-            <div className="col-span-1">
+            <div className="col-span-1 border-b-2  border-blue-500">
               <label
                 className="block text-sm font-medium text-gray-700 mb-1"
                 htmlFor="name"
@@ -107,13 +129,14 @@ async function handleSubmit(e) {
                 value={userItems.fullname}
                 type="text"
                 id="fullname"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-transparent border-none text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-blue-600"
                 placeholder="Enter your full name"
+                required
               />
             </div>
 
             {/* Email */}
-            <div className="col-span-1">
+            <div className="col-span-1 border-b-2 border-blue-500">
               <label
                 className="block text-sm font-medium text-gray-700 mb-1"
                 htmlFor="email"
@@ -126,13 +149,14 @@ async function handleSubmit(e) {
                 value={userItems.email}
                 type="email"
                 id="email"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-transparent border-none text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-blue-600"
                 placeholder="Enter your email"
+                required
               />
             </div>
 
             {/* Password */}
-            <div className="col-span-1">
+            <div className="col-span-1 border-b-2 border-blue-500">
               <label
                 className="block text-sm font-medium text-gray-700 mb-1"
                 htmlFor="password"
@@ -145,8 +169,9 @@ async function handleSubmit(e) {
                 value={userItems.password}
                 type="password"
                 id="password"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-transparent border-none text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-blue-600"
                 placeholder="Create a password"
+                required
               />
             </div>
 

@@ -1,12 +1,13 @@
 import { Link } from "react-router";
-import { Button, Label, TextInput } from "flowbite-react";
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router";
+import AlertWarning from "../Error/Alert";
 
 
 export default function Login() {
 const [isUser, setUser] = useState({ role:'principal', email: '', password: '' });
+const [isAlert, setAlert] = useState(false);
 const { login, loading } = useAuth();
 const navigate = useNavigate();
 
@@ -37,45 +38,69 @@ async function HandleSubmit(e) {
     
   } catch (error) {
     console.error("Message Error: ", error);
+    setAlert(true);
+    setUser({ role: '', email: '', password: '' });
   }
 }
 
 
   return (
- <div className="flex w-full h-screen items-center justify-center bg-gradient-to-r from-blue-400 to-purple-500">
-<div  className="h-auto w-96 rounded-xl bg-white p-8 shadow-lg">
-   {/* Title */}
-   <h1 className="mb-4 text-center text-2xl font-bold text-gray-800">
-          Welcome Back
-        </h1>
-        <p className="mb-6 text-center text-gray-600">
-          Login to your account to continue.
-        </p>
+    <div className="flex w-full h-screen items-center justify-center relative overflow-hidden">
+    {/* Background Video */}
+    <video 
+      className="absolute top-0 left-0 w-full h-full object-cover" 
+      src="/video/edu.mp4" 
+      autoPlay 
+      muted 
+      loop
+    ></video>
+    
+{/* Alert if wrong password */}
+    {isAlert && (
+        <AlertWarning/>
+    )}
 
+    {/* Login Card */}
+    <div className="relative z-10 h-auto w-96 rounded-xl bg-gray-300/50 backdrop-blur-md p-8 shadow-lg">
+      {/* Title */}
+      <h1 className="mb-4 text-center text-2xl font-bold text-gray-800">
+        Welcome Back
+      </h1>
+      <p className="mb-6 text-center text-gray-600">
+        Login to your account to continue.
+      </p>
+  
+      {/* Form */}
       <form onSubmit={HandleSubmit}>
         {/* Select Role */}
-        <div className="mb-4">
-              <label
-                className="block text-sm font-medium text-gray-700 mb-1"
-                htmlFor="role"
-              >
-              Select Role
-              </label>
-              <select
-              onChange={HandleOnchange}
-              value={isUser.role}
-              name="role"
-              id="school"
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="principal">Principal</option>
-              <option value="teacher">Teacher</option>
-            </select>
-            </div>
+        <div className="mb-4 border-b-2 border-blue-500">
+          <label
+            className="block text-sm font-medium text-gray-700 mb-1"
+            htmlFor="role"
+          >
+            Select Role
+          </label>
+          <select
+            onChange={HandleOnchange}
+            value={isUser.role}
+            name="role"
+            id="school"
+            className="w-full bg-transparent border-none text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-blue-600"
+          >
+            <option className="text-gray-500" value="principal">Principal</option>
+            <option className="text-gray-500" value="teacher">Teacher</option>
+          </select>
+        </div>
+  
         {/* Email Input */}
-        <div className="mb-4">
-          <Label htmlFor="email2" value="Email" className="mb-1 text-sm" />
-          <TextInput
+        <div className="mb-4 border-b-2 border-blue-500">
+          <label
+            htmlFor="email2"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Email
+          </label>
+          <input
             id="email2"
             onChange={HandleOnchange}
             value={isUser.email}
@@ -83,34 +108,41 @@ async function HandleSubmit(e) {
             type="email"
             placeholder={`Enter ${isUser.role} email`}
             required
-            shadow
+            className="w-full bg-transparent border-none text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-blue-600"
+            disabled={loading}
           />
         </div>
 
+  
         {/* Password Input */}
-        <div className="mb-4">
-          <Label
+        <div className="mb-4 border-b-2 border-blue-500">
+          <label
             htmlFor="password2"
-            value="Password"
-            className="mb-1 text-sm"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Password
+          </label>
+          <input
+            id="password2"
+            onChange={HandleOnchange}
+            value={isUser.password}
+            name="password"
+            type="password"
+            placeholder="Enter a password"
+            required
+            className="w-full bg-transparent border-none text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-blue-600"
+            disabled={loading}
           />
-          <TextInput id="password2"
-          onChange={HandleOnchange}
-          value={isUser.password}
-          name="password"
-          type="password"
-          placeholder="Enter a password"
-          required shadow />
         </div>
-
+  
         {/* Submit Button */}
-        <Button
-          className="w-full bg-blue-600 text-white hover:bg-blue-700 focus:ring focus:ring-blue-300"
+        <button
+          className="w-full py-2 mt-4 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           type="submit"
         >
-        {`Login as ${isUser.role}`}
-        </Button>
-
+          {`Login as ${isUser.role}`}
+        </button>
+  
         {/* Register Link */}
         <div className="mt-4 text-center">
           <span className="text-gray-600 text-sm">
@@ -124,7 +156,7 @@ async function HandleSubmit(e) {
           </span>
         </div>
       </form>
-</div>    
     </div>
+  </div>  
   );
 }
