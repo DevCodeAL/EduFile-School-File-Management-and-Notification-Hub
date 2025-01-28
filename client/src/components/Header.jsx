@@ -7,7 +7,7 @@ export default function Header({setOpen}){
         return(
             <>
            {/* Header */}
-            <header className="flex justify-between items-center mb-6 px-6 py-4 bg-white shadow">
+            <header>
             {/* Profile Toolkit */}
             <div className="  relative left-full -ms-8 group">
               {/* Profile Picture */}

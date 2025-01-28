@@ -12,17 +12,16 @@ const PrincipalDashboard = () => {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedQuarter, setSelectedQuarter] = useState("");
 
-
   const [isLoading, setLoading] = useState(false);
   const [isOpen, setOpen] = useState(false);
-  const [isFormOpen, setFormOpen] = useState(false); // State for form modal
+  const [isFormOpen, setFormOpen] = useState(false); 
   const [formData, setFormData] = useState({ 
     description: "", 
     uploadedBy: "", 
     file: null,
-    grade: selectedGrade,
-    subject: selectedSubject,
-     quarter: selectedQuarter,
+    grade: '',
+    subject: '',
+     quarter: '',
   });
 
   useEffect(() => {
@@ -33,6 +32,25 @@ const PrincipalDashboard = () => {
       quarter: selectedQuarter,
     }));
   }, [selectedGrade, selectedSubject, selectedQuarter]);
+
+// Handle Dropdown Event
+  const handleGradeSelect = (grade, e)=>{
+    e.stopPropagation();
+    setSelectedGrade(grade);
+    setSubjectsOpen(true);
+  };
+
+  const handleSubjectSelect = (subject, e)=>{
+    e.stopPropagation();
+    setSelectedSubject(subject);
+    setQuartersOpen(true);
+  };
+
+  const handleQuarterSelect = (quarter, e)=>{
+    e.stopPropagation();
+    setSelectedQuarter(quarter);
+    setGradesOpen(false);
+  };
 
   
   // Handle form input changes
@@ -46,9 +64,7 @@ const PrincipalDashboard = () => {
     if (!file) return;
     setFormData((prev) => ({ ...prev, file }));
   };
-  
-  
-  
+
 // File submission
   const handleSubmit = async (e) => {
     setLoading(true);
@@ -71,14 +87,10 @@ const PrincipalDashboard = () => {
 
       setTimeout(()=>{
         setFormOpen(false);
-      setLoading(false);
+        setLoading(false);
       }, 1000);
 
       if (!response.ok) throw new Error("File upload failed");
-      // setTimeout(()=>{
-      //     setLoading(false);
-      //     setIsClose(closeEvent);
-      // }, 2000);
     } catch (error) {
       alert(error.message);
     }
@@ -91,8 +103,15 @@ const PrincipalDashboard = () => {
       {/* Main Content */}
       <main className="flex-1 p-6 ml-64">
         {/* Header */}
-        <h1 className="text-2xl font-bold text-gray-700">Principal Dashboard</h1>
-        <Header setOpen={() => setOpen(true)} />
+        <div className="flex justify-between items-center mb-6 px-6 py-4">
+          <div>
+              <h1 className="text-2xl font-bold text-gray-700">Principal Dashboard</h1>
+          </div>
+
+          <div className='flex justify-end'>
+               <Header setClose={()=> setClose(true)}/>
+            </div>
+          </div>
 
         {isOpen && <ProfileModal setClose={() => setOpen(!true)} />}
 
@@ -134,12 +153,12 @@ const PrincipalDashboard = () => {
 
         {/* Form Modal */}
         {isFormOpen && (
-          <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-1/3">
+          <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-10">
+            <div  className="relative bg-white rounded-lg shadow-lg p-6 w-96 sm:w-5/6 max-w-lg">
               <h2 className="text-xl font-bold text-gray-700 mb-4">Add New File</h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Description */}
-                <div>
+                <div  className="col-span-2">
                   <label className="block text-gray-700 text-sm font-bold mb-2">
                     Description
                   </label>
@@ -170,7 +189,8 @@ const PrincipalDashboard = () => {
                 </div>
 
                 
-      <div className="inline-block text-left">
+      <div>
+      <label className="block text-gray-700 text-sm font-bold mb-2">Select Grade</label>
         <button
           id="multiLevelDropdownButton"
           onClick={() => setGradesOpen(!isGradesOpen)}
@@ -205,10 +225,8 @@ const PrincipalDashboard = () => {
               {["Kindergarten", "Grade 1", "Grade 2"].map((grade) => (
                 <li key={grade}>
                   <button
-                    onClick={() => {
-                      setSelectedGrade(grade);
-                      setSubjectsOpen(true);
-                    }}
+                  type="button"
+                    onClick={(e) => handleGradeSelect(grade, e)}
                     className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                   >
                     {grade}
@@ -227,10 +245,8 @@ const PrincipalDashboard = () => {
                   {["English", "Filipino", "Science", "Math"].map((subject) => (
                     <li key={subject}>
                       <button
-                        onClick={() => {
-                          setSelectedSubject(subject);
-                          setQuartersOpen(true);
-                        }}
+                      type="button"
+                        onClick={(e) => handleSubjectSelect(subject, e)}
                         className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                       >
                         {subject}
@@ -250,7 +266,7 @@ const PrincipalDashboard = () => {
                         (quarter) => (
                           <li key={quarter}>
                             <button
-                              onClick={() => setSelectedQuarter(quarter)}
+                              onClick={(e) => handleQuarterSelect(quarter, e)}
                               className="block px-4 py-2 hover:bg-gray-100 hover:underline dark:hover:bg-gray-600 dark:hover:text-white"
                             >
                               {quarter}
@@ -275,7 +291,7 @@ const PrincipalDashboard = () => {
       </div>
               
                {/* Input Element */}
-            <div className="w-full border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 cursor-pointer hover:bg-gray-100 p-5">
+            <div  className="col-span-2 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 cursor-pointer hover:bg-gray-100 p-2">
               <label
                 htmlFor="fileInput"
                 className="flex flex-col items-center cursor-pointer"
@@ -308,11 +324,11 @@ const PrincipalDashboard = () => {
             </div>
 
                 {/* Form Buttons */}
-                <div className="flex justify-end space-x-4">
+                <div className="col-span-2 flex justify-end space-x-4">
                   <button
                     type="button"
                     onClick={() => setFormOpen(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                   className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
                   >
                     Cancel
                   </button>

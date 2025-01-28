@@ -23,9 +23,17 @@ const TeacherDashboard = () => {
     <div className="flex flex-col min-h-screen bg-gray-100">
     {/* Main Content */}
     <main className="flex-1 p-6 ml-64">
-        <h1 className="text-2xl font-bold text-gray-700">Welcome, Teacher!</h1>
-        <Header setOpen={()=> setOpen(true)}/>
+      <div className="flex justify-between items-center mb-6 px-6 py-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-700">Welcome, Teacher!</h1>
+                </div>
+                <div className='flex justify-end'>
+                   <Header setOpen={()=> setOpen(true)}/>
+                  </div>
+                </div>
 
+      
+      
         {isOpen && <ProfileModal setClose={()=> setOpen(!true)}/>}
           
         {/* Notifications Section */}

@@ -1,23 +1,6 @@
-import { useEffect, useState } from "react";
-import { getAllFiles } from "../../../services/Api";
+
 
 export default function UploadFiles() {
-const [files, setFiles] = useState([]);
-
-const fetchFiles = async ()=>{
-    try {
-      const response = await getAllFiles(files);
-      setFiles(response);
-      console.log(response);
-    } catch (error) {
-      console.error("Failed to fetch posts:", error);
-    }
-}
-
-useEffect(()=>{
-fetchFiles();
-}, []);
-
 
     return (
       <>
@@ -61,6 +44,7 @@ fetchFiles();
                 </div>
                 {/* Additional Video Cards can go here */}
               </div>
+
             </section>
   
             {/* PDFs Section */}
