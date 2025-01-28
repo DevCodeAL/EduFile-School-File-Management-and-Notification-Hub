@@ -21,7 +21,7 @@ function App() {
 
   if (loading) {
     // Render a loading screen while checking authentication
-    return (<span>{null}</span>);
+    return (<span>{''}</span>);
   }
 
   return (

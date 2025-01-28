@@ -19,9 +19,16 @@ if (!user) {
          {isOpen &&  <ProfileModal setClose={()=> setClose(!true)}/>}
       {/* Main Content */}
       <main className="flex-1 p-6 ml-64">
-      <h1 className="text-2xl font-bold text-gray-700">Admin Dashboard</h1>
-      <Header setClose={()=> setClose(true)}/>
-    
+        <div className="flex justify-between items-center mb-6 px-6 py-4">
+          <div>
+              <h1 className="text-2xl font-bold text-gray-700">Admin Dashboard</h1>
+          </div>
+
+          <div className='flex justify-end'>
+               <Header setClose={()=> setClose(true)}/>
+            </div>
+          </div>
+       
         {/* Overview Section */}
         <section>
           <div className="grid grid-cols-2 gap-6 mb-5">
