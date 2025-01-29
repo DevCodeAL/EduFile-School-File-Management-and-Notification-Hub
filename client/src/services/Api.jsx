@@ -55,13 +55,12 @@ export const createAssociate = async (userData)=>{
   }
 }
 
-const API_Files = 'http://localhost:5000/api/files';
+const API_Files = 'http://localhost:5000/api/file';
 
-export const getAllFiles = async (files)=> {
+export const getAllFiles = async ()=> {
     try {
-      const response = await axios.get(API_Files, files);
+      const response = await axios.get(API_Files);
       return response.data;
-      
     } catch (error) {
       console.error("No files exist", error);
       throw error;

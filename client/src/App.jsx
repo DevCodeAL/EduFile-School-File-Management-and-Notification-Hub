@@ -3,13 +3,13 @@ import { BrowserRouter as Router, Routes, Route} from "react-router";
 import Login from "./components/Login";
 import PrincipalDashboard from "./pages/Principal Dashbord/PrincipalHome";
 import TeacherDashboard from "./pages/Teacher Dashbord/TeacherHome";
-import UploadeFiles from "./pages/Principal Dashbord/Pages/UploadFiles";
 import PendingUsers from "./pages/Principal Dashbord/Pages/PendingUsers";
 import RegistrationForm from "./components/RegistrationForm";
 import NavBar from "./pages/Principal Dashbord/Pages/NavBar";
 import TeacherNavbar from "./pages/Teacher Dashbord/TeacherNavBar";
 import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./context/ProtectedRoutes";
+import Files from "./pages/Principal Dashbord/Pages/Files";
 
 function App() {
   const { user } = useAuth();
@@ -40,7 +40,7 @@ function App() {
         path="/uploaded-files"
         element={
           <ProtectedRoute role="principal">
-            <UploadeFiles />
+          <Files/>
           </ProtectedRoute>
         }
       />
