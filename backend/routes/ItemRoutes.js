@@ -341,7 +341,7 @@ router.post("/stats", upload.single("file"), async (req, res) => {
   };
 
   // Endpoint to list files with unique identifiers
-router.get('/files', async (req, res) => {
+router.get('/file', async (req, res) => {
     try {
         const files = await Files.find();
         res.status(200).json(files);
