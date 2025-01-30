@@ -16,6 +16,8 @@ const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
     const allowedMimeTypes = [
+      "application/vnd.ms-excel", // For .xls (older Excel format)
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // For .xlsx (modern Excel format)
       "application/vnd.ms-powerpoint", // For .ppt
       "application/vnd.openxmlformats-officedocument.presentationml.presentation", // For .pptx
       "application/pdf", // PDF files
@@ -25,6 +27,7 @@ const upload = multer({
       "image/png", // For PNG images
       "video/mp4", // For MP4 videos
     ];
+    
 
     if (allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true); // Accept the file

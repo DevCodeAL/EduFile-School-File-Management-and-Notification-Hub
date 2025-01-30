@@ -33,7 +33,7 @@ const FileSchema = new Schema({
     fileType: {
       type: String,
       default: null,
-      enum: ['pdf', 'docx', 'doc', 'ppt', 'pptx', 'image', 'video'],
+      enum: ['pdf', 'docx', 'doc', 'ppt', 'pptx', 'xls', 'xlsx', 'image', 'video'],
     },
     mimetype: {
       type: String,

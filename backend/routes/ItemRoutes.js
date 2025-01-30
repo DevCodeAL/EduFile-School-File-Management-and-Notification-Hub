@@ -6,6 +6,8 @@ const router = express.Router();
 import authMiddleware from '../middleware/authMiddleWare.js';
 import  { Files, PrincipalItems, Teacher } from '../models/PrincipalSchema.js';
 import upload from '../middleware/uploadMiddleware.js';
+import io from '../server.js';
+import { sendEmailToTeachers } from '../controllers/emailService.js';
 
 
 // Registration for Principal
@@ -287,6 +289,11 @@ router.post("/stats", upload.single("file"), async (req, res) => {
     console.log("File Data:", req.file);
 
     try {
+
+         // Ensure the uploader is a principal
+    if (uploadedBy !== "School 1" ) {
+        return res.status(403).json({ error: "Only principals can upload files" });
+      }
     
       let fileData = null;
       if (req.file) {
@@ -318,8 +325,18 @@ router.post("/stats", upload.single("file"), async (req, res) => {
       });
   
       await newItem.save();
+
+          // Get all teachers' emails
+          const teachers = await Teacher.find({ role: "teacher" }).select("email");
+          const teacherEmails = teachers.map((teacher) => teacher.email);
+      
+          // Send email notifications to all teachers
+          await sendEmailToTeachers(teacherEmails, newItem);
+      
+          // Emit real-time notification to all connected teachers
+          io.emit("newFileUploaded", { message: `New file uploaded: ${newItem.description}` });
    
-      res.status(201).json({ message: "File uploaded successfully", newItem });
+      res.status(201).json({ message: "File uploaded and notifications sent!", newItem });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error uploading file", error: error.message });
@@ -327,7 +344,7 @@ router.post("/stats", upload.single("file"), async (req, res) => {
   });
   
   // Helper function to determine file type
-  function getFileType(mimetype) {
+function getFileType(mimetype) {
     if (mimetype.startsWith("image")) return "image";
     if (mimetype.startsWith("video")) return "video";
     if (mimetype === "application/pdf") return "pdf";
@@ -337,8 +354,12 @@ router.post("/stats", upload.single("file"), async (req, res) => {
     if (mimetype === "application/msword") return "doc"; // For .doc files
     if (mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
       return "docx"; // For .docx files
+    if (mimetype === "application/vnd.ms-excel") return "xls"; // For .xls (older Excel format)
+    if (mimetype === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+      return "xlsx"; // For .xlsx (modern Excel format)
     return "unknown";
-  };
+  }
+  
 
   // Endpoint to list files with unique identifiers
 router.get('/file', async (req, res) => {
