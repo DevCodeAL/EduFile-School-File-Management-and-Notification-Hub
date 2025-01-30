@@ -9,7 +9,7 @@ export default function Header({setOpen}){
            {/* Header */}
             <header>
             {/* Profile Toolkit */}
-            <div className="  relative left-full -ms-8 group">
+            <div className="relative left-full  -ms-8 group">
               {/* Profile Picture */}
               <div className="w-12 h-12 border-2 border-indigo-600 rounded-full overflow-hidden cursor-pointer">
                 <img

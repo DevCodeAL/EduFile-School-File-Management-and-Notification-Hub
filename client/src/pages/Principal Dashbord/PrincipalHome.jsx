@@ -109,7 +109,7 @@ const PrincipalDashboard = () => {
           </div>
 
           <div className='flex justify-end'>
-               <Header setClose={()=> setClose(true)}/>
+               <Header setOpen={()=> setOpen(true)}/>
             </div>
           </div>
 
@@ -172,21 +172,27 @@ const PrincipalDashboard = () => {
                   ></textarea>
                 </div>
 
-                {/* Uploaded By */}
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Uploaded By
-                  </label>
-                  <input
-                    type="text"
-                    name="uploadedBy"
-                    value={formData.uploadedBy}
-                    onChange={handleInputChange}
-                    className="w-full border rounded-lg px-3 py-2 text-gray-700"
-                    placeholder="Enter uploader name"
-                    required
-                  />
-                </div>
+              {/* Uploaded By */}
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Uploaded By
+              </label>
+              <select
+                name="uploadedBy"
+                value={formData.uploadedBy}
+                onChange={handleInputChange}
+                className="w-full border rounded-lg px-3 py-2 text-gray-700"
+                required
+              >
+                <option  value="" disabled>Select a School</option>
+                {[...Array(28)].map((_, index) => (
+                  <option key={index} value={`School ${index + 1}`}>
+                    School {index + 1}
+                  </option>
+                ))}
+              </select>
+            </div>
+
 
                 
       <div>
@@ -222,7 +228,7 @@ const PrincipalDashboard = () => {
             className="z-10 absolute bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700"
           >
             <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
-              {["Kindergarten", "Grade 1", "Grade 2"].map((grade) => (
+              {["Kindergarten", "Grade 1", "Grade 2", "Grade 3"].map((grade) => (
                 <li key={grade}>
                   <button
                   type="button"
@@ -317,7 +323,7 @@ const PrincipalDashboard = () => {
                 id="fileInput"
                 type="file"
                 name="file"
-                accept="image/*,video/*,.pdf,.doc,.docx,.pptx,.ppt"
+                accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
                 onChange={handleFileChange}
                 className="hidden"
               />
@@ -344,33 +350,49 @@ const PrincipalDashboard = () => {
           </div>
         )}
 
-<section id="teachers" className="mt-8 bg-white shadow-lg rounded-lg p-6">
-        <h2 className="text-xl font-bold text-gray-700 mb-4">List of Teachers</h2>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="border border-gray-300 px-4 py-2">Name</th>
-              <th className="border border-gray-300 px-4 py-2">Email</th>
-              <th className="border border-gray-300 px-4 py-2">Status</th>
-              <th className="border border-gray-300 px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="hover:bg-gray-100">
-              <td className="border border-gray-300 px-4 py-2">John Doe</td>
-              <td className="border border-gray-300 px-4 py-2">john@example.com</td>
-              <td className="border border-gray-300 px-4 py-2 text-green-500 font-semibold">
-                Active
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                <button className="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                  View
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        </section>
+          <section id="teachers" className="mt-8 bg-white shadow-lg rounded-xl p-6">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">List of Teachers</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse rounded-xl overflow-hidden">
+                <thead>
+                  <tr className="bg-indigo-600 text-white">
+                    <th className="px-6 py-3 text-left font-medium">Name</th>
+                    <th className="px-6 py-3 text-left font-medium">Role</th>
+                    <th className="px-6 py-3 text-left font-medium">School</th>
+                    <th className="px-6 py-3 text-left font-medium">Email</th>
+                    <th className="px-6 py-3 text-left font-medium">Status</th>
+                    <th className="px-6 py-3 text-left font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="bg-gray-50 hover:bg-gray-100 transition">
+                    <td className="px-6 py-4 border-b">John Doe</td>
+                    <td className="px-6 py-4 border-b">Math Teacher</td>
+                    <td className="px-6 py-4 border-b">Sunrise High School</td>
+                    <td className="px-6 py-4 border-b">john@example.com</td>
+                    <td className="px-6 py-4 border-b text-green-500 font-semibold">Active</td>
+                    <td className="px-6 py-4 border-b">
+                      <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition">
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                  <tr className="bg-white hover:bg-gray-100 transition">
+                    <td className="px-6 py-4 border-b">Jane Smith</td>
+                    <td className="px-6 py-4 border-b">Science Teacher</td>
+                    <td className="px-6 py-4 border-b">Green Valley Academy</td>
+                    <td className="px-6 py-4 border-b">jane@example.com</td>
+                    <td className="px-6 py-4 border-b text-red-500 font-semibold">Inactive</td>
+                    <td className="px-6 py-4 border-b">
+                      <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition">
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
       </main>
     </div>
   );

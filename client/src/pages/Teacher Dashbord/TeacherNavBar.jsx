@@ -1,5 +1,15 @@
+import { Link, useLocation } from "react-router";
 
 export default function TeacherNavbar(){
+  const location = useLocation();
+
+  // Function to determine the active link class
+  const isActive = (path) => {
+    return location.pathname === path
+      ? 'text-white border-b-2 border-white px-3 py-2 transition-all duration-300 ease-in-out'
+      : 'text-white hover:bg-blue-600 hover:bg-opacity-20 rounded-lg px-3 py-2';
+  };
+
     return(
         <>
             {/* Sidebar */}
@@ -11,14 +21,14 @@ export default function TeacherNavbar(){
         <nav className="mt-6 px-4">
           <ul className="space-y-4">
             <li>
-              <a href="#dashboard" className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-white/10">
+              <Link to={'/teacher_dashboard'} className={isActive('/teacher_dashboard')}>
                 <span className="text-white text-sm font-medium">Dashboard</span>
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#library" className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-white/10">
+              <Link to={'/file-library'} className={isActive('/file-library')}>
                 <span className="text-white text-sm font-medium">File Library</span>
-              </a>
+              </Link>
             </li>
             <li>
               <a href="#folder" className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-white/10">
