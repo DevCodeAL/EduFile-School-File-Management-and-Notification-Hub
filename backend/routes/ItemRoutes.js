@@ -1,14 +1,14 @@
 import express from 'express';
 import bycrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-const router = express.Router();
- import AdminUser from '../models/adminSchema.js';
+import AdminUser from '../models/adminSchema.js';
 import authMiddleware from '../middleware/authMiddleWare.js';
 import  { Files, PrincipalItems, Teacher } from '../models/PrincipalSchema.js';
 import upload from '../middleware/uploadMiddleware.js';
-import io from '../server.js';
+import { io } from '../server.js';
 import { sendEmailToTeachers } from '../controllers/emailService.js';
-
+import { sendApprovalEmail } from '../controllers/sendEmailAproval.js';
+const router = express.Router();
 
 // Registration for Principal
 router.post('/principal', async (req, res)=> {
@@ -97,17 +97,78 @@ router.post('/register', async (req, res)=>{
             fullname: fullname,
             email: email,
             password: hashPassword,
+            status: "pending",
             });
 
         await newUserItems.save();
 
-        res.status(200).json({message: 'Registerd Successfully', newUserItems});
+        res.status(200).json({message: 'Registerd Successfully, but pending approval!', newUserItems});
 
     
     }catch(error){
         res.status(500).json({message: 'No user registerd', error});
     }
 });
+
+
+// Approve for Teachers
+router.put("/approve/:id", async (req, res) => {
+    const { id } = req.params;
+    console.log("Incoming parameter:", id);
+
+    try {
+        const teacher = await Teacher.findById(id);
+
+        if (!teacher) {
+            return res.status(404).json({ error: "Teacher not found" });
+        }
+
+        teacher.status = "approved"; // Change status to approved
+        await teacher.save();
+
+        // Get all teachers' emails
+        const teachers = await Teacher.find({ role: "teacher" }).select("email");
+        const teacherEmails = teachers.map((t) => t.email); 
+
+        // Send email notifications to all teachers
+        await sendApprovalEmail(teacherEmails);
+
+        // Emit real-time notification to all connected teachers
+        io.emit("teacherApproved", { message: `Teacher ${teacher.fullname} has been approved.` });
+
+        res.status(200).json({ message: "Teacher approved successfully" });
+    } catch (error) {
+        console.error("Error approving teacher:", error);
+        res.status(500).json({ error: "Error approving teacher" });
+    }
+});
+
+
+//   Get Pending teachers
+  router.get("/pending-teachers", async (req, res) => {
+    try {
+      const pendingTeachers = await Teacher.find({ status: "pending" });
+      res.status(200).json(pendingTeachers);
+    } catch (error) {
+      res.status(500).json({ error: "Error fetching pending teachers" });
+    }
+  });
+
+// Reject teacher registration
+// Delete
+router.delete('/reject/:id', async (req, res) => {
+    try {
+
+      await Teacher.findByIdAndDelete(req.params.id);
+      res.status(200).json({ message: 'Item deleted' });
+
+    } catch (err) {
+
+      res.status(500).json({ message: err.message });
+    }
+  });
+  
+  
 
 // Route to get all teachers-----------
 router.get('/all-teachers', async (req, res) => {
@@ -204,6 +265,10 @@ router.post('/user', async (req, res) => {
                 break;
             case 'teacher':
                 user = await Teacher.findOne({ email, role });
+                 // Check if teacher is approved
+                if (user.status !== "approved") {
+                    return res.status(403).json({ error: "Your account is pending approval" });
+                }
                 break;
             default:
                 return res.status(400).json({ message: 'Invalid role!' });
@@ -290,10 +355,6 @@ router.post("/stats", upload.single("file"), async (req, res) => {
 
     try {
 
-         // Ensure the uploader is a principal
-    if (uploadedBy !== "School 1" ) {
-        return res.status(403).json({ error: "Only principals can upload files" });
-      }
     
       let fileData = null;
       if (req.file) {

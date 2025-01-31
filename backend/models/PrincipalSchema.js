@@ -63,6 +63,7 @@ const TeacherSchema = new Schema({
   fullname: { type: String, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true },
+  status: { type: String, enum: ["pending", "approved"], default: "pending" }, // New field
 }, {
   timestamps: true,
 });
