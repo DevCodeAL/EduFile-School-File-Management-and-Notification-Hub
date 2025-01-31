@@ -55,6 +55,7 @@ export const createAssociate = async (userData)=>{
   }
 }
 
+// Get All uploaded files
 const API_Files = 'http://localhost:5000/api/file';
 
 export const getAllFiles = async ()=> {
@@ -65,4 +66,44 @@ export const getAllFiles = async ()=> {
       console.error("No files exist", error);
       throw error;
     }
+}
+
+// Api for approval
+const API_Approval = "http://localhost:5000/api/approve";
+
+export const userApproval = async (id) => {
+  try {
+    const response = await axios.put(`${API_Approval}/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("No users exist to be approved", error);
+    throw error;
+  }
+};
+
+// API for Reject application teacher
+const API_Reject = "http://localhost:5000/api/reject";
+export const rejectItem = async (id)=> {
+   try {
+    const response = await axios.delete(`${API_Reject}/${id}`);
+    return response.data;
+   } catch (error) {
+    console.error("No users exist to be deleted!", error);
+    throw error;
+   }
+}
+
+
+
+// API for get all pending teachers
+const API_userPendingList = 'http://localhost:5000/api/pending-teachers';
+
+export const getUserPending = async ()=>{
+  try {
+    const response = await axios.get(API_userPendingList);
+    return response.data;
+  } catch (error) {
+    console.error("No teachers users exist!", error);
+    throw error;
+  }
 }

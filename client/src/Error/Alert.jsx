@@ -8,7 +8,10 @@ export default function AlertWarning() {
 
   return (
     <>
-      <Modal show={openModal} size="md" onClose={() => setOpenModal(false)} popup>
+      <Modal show={openModal} size="md" onClose={() => {
+        setOpenModal(false);
+        location.reload();
+      }} popup>
       <Modal.Header />
         <Modal.Body className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 backdrop-blur-sm">
         <div className="p-6 rounded-lg shadow-lg w-full max-w-md bg-white relative">
@@ -17,7 +20,10 @@ export default function AlertWarning() {
               Invalid email or password!
             </h3>
             <div className="flex justify-center gap-4">
-              <Button className="bg-red-600" onClick={()=> setOpenModal(false)}>
+              <Button className="bg-red-600" onClick={()=> {
+                setOpenModal(false);
+                location.reload();
+              }}>
                 {"Close"}
               </Button>
             </div>
