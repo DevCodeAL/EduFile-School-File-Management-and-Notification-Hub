@@ -65,6 +65,22 @@ const PrincipalDashboard = () => {
     setFormData((prev) => ({ ...prev, file }));
   };
 
+  // Hande Reset Form
+  const handleReset = ()=>{
+   setFormData({ 
+    description: "", 
+    uploadedBy: "", 
+    file: null,
+    grade: '',
+    subject: '',
+     quarter: '',
+  });
+
+  setSelectedGrade('');
+  setSelectedSubject('');
+  setSelectedQuarter('');
+  }
+
 // File submission
   const handleSubmit = async (e) => {
     setLoading(true);
@@ -331,6 +347,13 @@ const PrincipalDashboard = () => {
 
                 {/* Form Buttons */}
                 <div className="col-span-2 flex justify-end space-x-4">
+                <button
+                    type="button"
+                    onClick={() => handleReset()}
+                   className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                  >
+                    Reset
+                  </button>
                   <button
                     type="button"
                     onClick={() => setFormOpen(false)}

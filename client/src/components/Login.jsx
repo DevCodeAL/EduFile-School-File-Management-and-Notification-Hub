@@ -3,12 +3,14 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router";
 import AlertWarning from "../Error/Alert";
+import PendingApprovalModal from "../Error/NotApprovedAlert";
 
 
 export default function Login() {
 const [isUser, setUser] = useState({ role:'principal', email: '', password: '' });
 const [isAlert, setAlert] = useState(false);
 const { login, loading } = useAuth();
+const [needApproval, setApproval] = useState(false);
 const navigate = useNavigate();
 
 // Input Field
@@ -37,9 +39,13 @@ async function HandleSubmit(e) {
   }
     
   } catch (error) {
-    console.error("Message Error: ", error);
-    setAlert(true);
+    if(error.response.status === 403){
+        setApproval(true);
+    } else{
+       setAlert(true);
+    };
     setUser({ role: '', email: '', password: '' });
+    console.error("Message Error: ", error);
   }
 }
 
@@ -59,6 +65,11 @@ async function HandleSubmit(e) {
     {isAlert && (
         <AlertWarning/>
     )}
+
+    {needApproval && <PendingApprovalModal onClose={()=> {
+      setApproval(false);
+      location.reload();
+    }}/>}
 
     {/* Login Card */}
     <div className="relative z-10 h-auto w-96 rounded-xl bg-gray-300/50 backdrop-blur-md p-8 shadow-lg">

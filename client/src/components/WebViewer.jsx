@@ -44,7 +44,7 @@ const MyWebViewer = ({ fileUrl }) => {
       <div
         className="webviewer"
         ref={viewer}
-        style={{ height: '100vh', width: '80%' }}
+        style={{ height: '100vh', width: '100%' }}
       ></div>
     </div>
   );

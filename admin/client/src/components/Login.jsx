@@ -111,6 +111,15 @@ export default function Login() {
            id="password" type="password" required shadow />
         </div>
 
+         {/* Forgot Password */}
+         <div className="mb-6 text-center">
+  <span className="relative text-blue-500 font-semibold hover:text-blue-700 transition duration-300 cursor-pointer 
+                   after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-blue-500 
+                   hover:after:w-full after:transition-all after:duration-300">
+    Forgot Password?
+  </span>
+</div>
+
         {/* Submit Button */}
         <Button
           className="w-full bg-blue-600 text-white hover:bg-blue-700 focus:ring focus:ring-blue-300"

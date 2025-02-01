@@ -56,7 +56,7 @@ export default function UploadedFiles() {
     <div className="flex flex-col min-h-screen bg-gray-100">
     <main className="flex-1 p-6 ml-64">
       <div className="flex justify-between items-center mb-6 px-6 py-4">
-        <h1 className="text-2xl font-bold text-gray-700">Teachers Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-700">Principals Dashboard</h1>
         <Header setOpen={() => setOpen(true)} />
       </div>
   

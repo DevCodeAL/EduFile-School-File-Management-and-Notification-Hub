@@ -102,7 +102,10 @@ router.post('/register', async (req, res)=>{
 
         await newUserItems.save();
 
-        res.status(200).json({message: 'Registerd Successfully, but pending approval!', newUserItems});
+        res.status(200).json({
+            success: true,
+            message: 'Registerd Successfully, but pending approval!',
+             newUserItems});
 
     
     }catch(error){
@@ -258,6 +261,17 @@ router.post('/user', async (req, res) => {
             return res.status(400).json({ message: 'All fields are required!' });
         }
 
+        const useritem = await Teacher.findOne({ email });
+
+        if(role === 'teacher'){
+              // Check if teacher is approved
+            if (useritem.status !== "approved") {
+                return res.status(403).json({ error: "Your account is pending approval" });
+            }
+        };
+   
+        
+
         let user;
         switch (role) {
             case 'principal':
@@ -265,10 +279,7 @@ router.post('/user', async (req, res) => {
                 break;
             case 'teacher':
                 user = await Teacher.findOne({ email, role });
-                 // Check if teacher is approved
-                if (user.status !== "approved") {
-                    return res.status(403).json({ error: "Your account is pending approval" });
-                }
+                
                 break;
             default:
                 return res.status(400).json({ message: 'Invalid role!' });

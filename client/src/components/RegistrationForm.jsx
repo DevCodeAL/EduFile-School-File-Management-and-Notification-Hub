@@ -3,12 +3,14 @@ import { useState } from "react";
 import { createUser, createAssociate  } from "../services/Api";
 import { useNavigate } from "react-router";
 import Loading from "../Success/Loading";
+import RegistrationSuccessModal from "../Error/WaitingApproval";
 
 
 export default function RegistrationForm() {
   const navigate = useNavigate();
   const [isLoading, setLoading] = useState(false);
-const [userItems, setUserItems] = useState({role: 'teacher',
+  const [isSuccess, setSuccess] = useState(false);
+  const [userItems, setUserItems] = useState({role: 'teacher',
    school: '',
     fullname: '',
      email: '',
@@ -25,23 +27,30 @@ const handleChange = (e)=>{
 
 // Handle function to submit
 async function handleSubmit(e) {
-  setLoading(true);
   e.preventDefault();
-    try {
-      const response = await createUser(userItems);
-      await createAssociate();
-      setUserItems({
-        role: '', school: '', fullname: '', email: '', password: '',
-      });
-      setTimeout(()=>{
-        navigate('/login');
-      }, 2000);
+  setLoading(true);
+
+  try {
+    const response = await createUser(userItems);
+    await createAssociate();
     
-      console.log(response);
-    } catch (error) {
-      console.log({message: error});
+    setUserItems({
+      role: '', school: '', fullname: '', email: '', password: '',
+    });
+
+    if (response.success) {
+      setSuccess(true);
+      setLoading(false); 
+    } else {
+      setLoading(false); 
     }
+
+  } catch (error) {
+    console.log({ message: error });
+    setLoading(false); // Stop loading on error
+  }
 }
+
 
   return (
     <>
@@ -59,6 +68,13 @@ async function handleSubmit(e) {
          {isLoading && (
            <Loading/>
          )}
+
+         {/* Registration Greetings */}
+          {isSuccess && <RegistrationSuccessModal isOpen={isSuccess} onClose={()=> {
+            setSuccess(false);
+            navigate('/login');
+          }}/>}
+
 
         <div className="relative z-10 h-auto w-96  bg-gray-300/50 backdrop-blur-md  sm:w-5/6 max-w-lg shadow-lg rounded-lg p-6 sm:p-8 ">
           {/* Header */}

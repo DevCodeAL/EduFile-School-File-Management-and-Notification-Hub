@@ -167,9 +167,10 @@ export default function UploadedFiles() {
                                 <a
                                   href={fileUrl}
                                   download
-                                  className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition"
+                                  target="blank"
+                                  className={`px-4 py-2 ${fileType === 'video' ? ' bg-indigo-600' : ' bg-green-600'} text-white text-sm font-medium rounded hover:bg-green-700 transition`}
                                 >
-                                  Download
+                                 {fileType === 'video' ? 'Preview' : 'Download'}
                                 </a>
                               </div>
                             </div>

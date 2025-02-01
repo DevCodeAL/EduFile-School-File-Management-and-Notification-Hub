@@ -65,7 +65,8 @@ const UserManagement = () => {
                   <td className="border px-4 py-2">Principal</td>
                   <td className="border px-4 py-2">CRT</td>
                   <td className="border px-4 py-2 flex space-x-2">
-                    <Button onClick={()=> EditsetOpenModal(true)} className="text-blue-500 hover:underline">Edit</Button>
+                  <Button className="text-blue-500 hover:underline">View</Button>
+                    <Button onClick={()=> EditsetOpenModal(true)} className="text-green-600 hover:underline">Update</Button>
                     <Button onClick={()=> setisDeleteOpen(true)} className="text-red-500 hover:underline">Delete</Button>
                   </td>
                 </tr>
