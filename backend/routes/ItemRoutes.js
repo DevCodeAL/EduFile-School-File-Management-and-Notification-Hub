@@ -360,7 +360,7 @@ router.post('/user', async (req, res) => {
 
     // Upload files , Pdf, Docx, Doc Image, Videos
 router.post("/stats", upload.single("file"), async (req, res) => {
-    const {  description, uploadedBy, grade, subject, quarter, } = req.body;
+    const {  description, grade, subject, quarter, week } = req.body;
     console.log('Incoming data', req.body);
     console.log("File Data:", req.file);
 
@@ -389,10 +389,10 @@ router.post("/stats", upload.single("file"), async (req, res) => {
       // Create and save file document
       const newItem = new Files({
         description,
-       uploadedBy,
        grade,
        subject,
        quarter,
+       week,
         files: fileData,
       });
   

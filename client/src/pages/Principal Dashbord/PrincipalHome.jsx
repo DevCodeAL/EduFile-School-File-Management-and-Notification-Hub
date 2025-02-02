@@ -7,21 +7,25 @@ const PrincipalDashboard = () => {
   const [isGradesOpen, setGradesOpen] = useState(false);
   const [isSubjectsOpen, setSubjectsOpen] = useState(false);
   const [isQuartersOpen, setQuartersOpen] = useState(false);
+  const [isWeek, setWeek] = useState(false);
+// Modal Ready to Upload Indicator
+  const [isSelectedOpen, setSelectedOpen] = useState(false);
 
   const [selectedGrade, setSelectedGrade] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedQuarter, setSelectedQuarter] = useState("");
+  const [selectedWeek, setSelectedWeek] = useState("");
 
   const [isLoading, setLoading] = useState(false);
   const [isOpen, setOpen] = useState(false);
   const [isFormOpen, setFormOpen] = useState(false); 
   const [formData, setFormData] = useState({ 
     description: "", 
-    uploadedBy: "", 
     file: null,
     grade: '',
     subject: '',
      quarter: '',
+     week: '',
   });
 
   useEffect(() => {
@@ -30,14 +34,16 @@ const PrincipalDashboard = () => {
       grade: selectedGrade,
       subject: selectedSubject,
       quarter: selectedQuarter,
+      week: selectedWeek,
     }));
-  }, [selectedGrade, selectedSubject, selectedQuarter]);
+  }, [selectedWeek, selectedGrade, selectedSubject, selectedQuarter]);
 
 // Handle Dropdown Event
   const handleGradeSelect = (grade, e)=>{
     e.stopPropagation();
     setSelectedGrade(grade);
     setSubjectsOpen(true);
+    setSelectedOpen(true);
   };
 
   const handleSubjectSelect = (subject, e)=>{
@@ -49,8 +55,17 @@ const PrincipalDashboard = () => {
   const handleQuarterSelect = (quarter, e)=>{
     e.stopPropagation();
     setSelectedQuarter(quarter);
-    setGradesOpen(false);
+    setWeek(true);
   };
+
+  const handleWeekSelect = (week, e)=>{
+    e.stopPropagation();
+    setSelectedWeek(week);
+    setGradesOpen(false);
+    setSubjectsOpen(false);
+    setQuartersOpen(false);
+    setWeek(false);
+  }
 
   
   // Handle form input changes
@@ -69,31 +84,31 @@ const PrincipalDashboard = () => {
   const handleReset = ()=>{
    setFormData({ 
     description: "", 
-    uploadedBy: "", 
     file: null,
     grade: '',
     subject: '',
      quarter: '',
+     week: '',
   });
 
   setSelectedGrade('');
   setSelectedSubject('');
   setSelectedQuarter('');
+  setSelectedWeek('');
   }
 
 // File submission
   const handleSubmit = async (e) => {
     setLoading(true);
     e.preventDefault();
-    // setLoading(true);
 
     const data = new FormData();
     data.append("description", formData.description);
-    data.append("uploadedBy", formData.uploadedBy);
     data.append("file", formData.file);
     data.append("grade", formData.grade);
     data.append("subject", formData.subject);
     data.append("quarter", formData.quarter);
+    data.append('week', formData.week);
 
     try {
       const response = await fetch("http://localhost:5000/api/stats", {
@@ -188,29 +203,6 @@ const PrincipalDashboard = () => {
                   ></textarea>
                 </div>
 
-              {/* Uploaded By */}
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Uploaded By
-              </label>
-              <select
-                name="uploadedBy"
-                value={formData.uploadedBy}
-                onChange={handleInputChange}
-                className="w-full border rounded-lg px-3 py-2 text-gray-700"
-                required
-              >
-                <option  value="" disabled>Select a School</option>
-                {[...Array(28)].map((_, index) => (
-                  <option key={index} value={`School ${index + 1}`}>
-                    School {index + 1}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-
-                
       <div>
       <label className="block text-gray-700 text-sm font-bold mb-2">Select Grade</label>
         <button
@@ -288,10 +280,36 @@ const PrincipalDashboard = () => {
                         (quarter) => (
                           <li key={quarter}>
                             <button
+                            type="button"
                               onClick={(e) => handleQuarterSelect(quarter, e)}
                               className="block px-4 py-2 hover:bg-gray-100 hover:underline dark:hover:bg-gray-600 dark:hover:text-white"
                             >
                               {quarter}
+                            </button>
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Weeks */}
+                {isWeek && (
+                  <div
+                    id="quartersDropdown"
+                    className="z-10 absolute left-full translate-x-36 top-0 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700 overflow-y-auto"
+                     style={{ maxHeight: "200px" }} 
+                  >
+                    <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
+                      {["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12"].map(
+                        (week) => (
+                          <li key={week}>
+                            <button
+                            type="button"
+                              onClick={(e) => handleWeekSelect(week, e)}
+                              className="block px-4 py-2 hover:bg-gray-100 hover:underline dark:hover:bg-gray-600 dark:hover:text-white"
+                            >
+                              {week}
                             </button>
                           </li>
                         )
@@ -305,12 +323,31 @@ const PrincipalDashboard = () => {
         )}
       </div>
 
-      {/* Display Selected Options */}
-      <div className="mt-4">
-        <p>Selected Grade: {selectedGrade}</p>
-        <p>Selected Subject: {selectedSubject}</p>
-        <p>Selected Quarter: {selectedQuarter}</p>
-      </div>
+     {isSelectedOpen && ( <div className="absolute bg-white shadow-lg rounded-lg border border-gray-200">
+        <div className="flex justify-self-end p-1">
+           <button onClick={() =>setSelectedOpen(false)}>✖</button>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-700 mb-3">📌 Selected Options</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-md">
+            <p className="text-gray-600 text-sm">Selected Grade</p>
+            <p className="text-lg font-medium text-blue-600">{selectedGrade || "None"}</p>
+          </div>
+          <div className="p-3 bg-green-50 border-l-4 border-green-500 rounded-md">
+            <p className="text-gray-600 text-sm">Selected Subject</p>
+            <p className="text-lg font-medium text-green-600">{selectedSubject || "None"}</p>
+          </div>
+          <div className="p-3 bg-yellow-50 border-l-4 border-yellow-500 rounded-md">
+            <p className="text-gray-600 text-sm">Selected Quarter</p>
+            <p className="text-lg font-medium text-yellow-600">{selectedQuarter || "None"}</p>
+          </div>
+          <div className="p-3 bg-violet-50 border-l-4 border-violet-500 rounded-md">
+            <p className="text-gray-600 text-sm">Selected Week</p>
+            <p className="text-lg font-medium text-violet-600">{selectedWeek || "None"}</p>
+          </div>
+        </div>
+      </div>)}
+
               
                {/* Input Element */}
             <div  className="col-span-2 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 cursor-pointer hover:bg-gray-100 p-2">
@@ -356,7 +393,11 @@ const PrincipalDashboard = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormOpen(false)}
+                    onClick={() => {
+                      setFormOpen(false);
+                      handleReset();
+                      setSelectedOpen(false);
+                    }}
                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
                   >
                     Cancel

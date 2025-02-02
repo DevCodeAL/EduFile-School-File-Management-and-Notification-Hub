@@ -6,11 +6,7 @@ const FileSchema = new Schema({
     type: String,
     required: true,
   },
-  uploadedBy: {
-    type: String,
-     required: true,
-  },
-
+  
   grade: {
     type: String,
      required: true,
@@ -21,6 +17,11 @@ const FileSchema = new Schema({
   },
 
   quarter: {
+    type: String,
+    required: true,
+  },
+
+  week: {
     type: String,
     required: true,
   },
