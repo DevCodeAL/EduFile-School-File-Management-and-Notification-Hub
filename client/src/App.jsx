@@ -10,7 +10,6 @@ import TeacherNavbar from "./pages/Teacher Dashbord/TeacherNavBar";
 import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./context/ProtectedRoutes";
 import Files from "./pages/Principal Dashbord/Pages/Files";
-import UploadFiles from './pages/Teacher Dashbord/UploadeFiles';
 import FileLibrary from "./pages/Teacher Dashbord/FileLibrary";
 
 function App() {
@@ -64,14 +63,7 @@ function App() {
           </ProtectedRoute>
         }
       />
-
-      <Route path="/uploads"
-       element={
-        <ProtectedRoute role="teacher">
-            <UploadFiles/>
-        </ProtectedRoute>
-      } />
-
+      
     <Route path="/file-library"
           element={
             <ProtectedRoute role="teacher">

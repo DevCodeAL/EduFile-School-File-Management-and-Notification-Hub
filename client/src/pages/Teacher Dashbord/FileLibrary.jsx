@@ -1,154 +1,198 @@
 import { useEffect, useState } from "react";
+import { FaFolder, FaFilePdf, FaFileWord, FaFileExcel, FaArrowLeft, FaFilePowerpoint } from "react-icons/fa";
 import { getAllFiles } from "../../services/Api";
 import { WebViewerModal } from "../../components/WebViewer";
-import Header from "../../components/Header";
-import ProfileModal from "../../components/Profile";
 
-export default function FileLibrary() {
-  const [isOpen, setOpen] = useState(false);
-  const [filesBySchool, setFilesBySchool] = useState({});
+export default function UploadedFiles() {
+  const [fileData, setFileData] = useState([]);
+  const [currentFolder, setCurrentFolder] = useState(null);
+  const [breadcrumbs, setBreadcrumbs] = useState([]);
   const [webOpen, setWebOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [fileUrl, setFileUrl] = useState(""); // Added state to store file URL
 
-  const fetchFiles = async () => {
-    try {
-      const response = await getAllFiles();
-      const groupedData = response.reduce((acc, file) => {
-        const { uploadedBy, grade, subject, quarter } = file;
-        if (!acc[uploadedBy]) acc[uploadedBy] = {};
-        if (!acc[uploadedBy][grade]) acc[uploadedBy][grade] = {};
-        if (!acc[uploadedBy][grade][subject]) acc[uploadedBy][grade][subject] = {};
-        if (!acc[uploadedBy][grade][subject][quarter]) acc[uploadedBy][grade][subject][quarter] = [];
-        acc[uploadedBy][grade][subject][quarter].push(file);
-        return acc;
-      }, {});
-      setFilesBySchool(groupedData);
-    } catch (error) {
-      console.error("Failed to fetch files:", error);
+  const transformToFolderStructure = (files) => {
+    const structure = { name: "LRS", subfolders: {} };
+  
+    files.forEach((file) => {
+      const { grade, subject, quarter, week, files: fileList } = file;
+      if (!structure.subfolders[grade]) structure.subfolders[grade] = { name: grade, subfolders: {} };
+
+      if (!structure.subfolders[grade].subfolders[subject])
+        structure.subfolders[grade].subfolders[subject] = { name: subject, subfolders: {} };
+
+      if (!structure.subfolders[grade].subfolders[subject].subfolders[quarter])
+        structure.subfolders[grade].subfolders[subject].subfolders[quarter] = { name: quarter, subfolders: {} };
+
+      if (!structure.subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week])
+        structure.subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week] = { name: week, files: [] };
+  
+      // Store full file objects instead of only filenames
+      structure.subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week].files.push(...fileList);
+    });
+  
+    return [structure];
+  };
+  
+
+  useEffect(() => {
+    const fetchAllFiles = async () => {
+      try {
+        const response = await getAllFiles();
+        setFileData(transformToFolderStructure(response));
+      } catch (error) {
+        console.error("Error fetching files:", error);
+      }
+    };
+
+    fetchAllFiles();
+  }, []);
+
+  const navigateTo = (folder) => {
+    setCurrentFolder(folder);
+    setBreadcrumbs([...breadcrumbs, { name: folder.name, folder }]);
+  };
+
+  const goBack = () => {
+    if (breadcrumbs.length > 0) {
+      const updatedBreadcrumbs = breadcrumbs.slice(0, -1);
+      setCurrentFolder(updatedBreadcrumbs.length > 0 ? updatedBreadcrumbs[updatedBreadcrumbs.length - 1].folder : null);
+      setBreadcrumbs(updatedBreadcrumbs);
     }
   };
 
-  useEffect(() => {
-    fetchFiles();
-  }, []);
+  const getFileIcon = (file) => {
+  if (!file || typeof file !== "object") {
+    console.warn("Invalid file object:", file);
+    return <p className="text-gray-500">Invalid File</p>;
+  }
+
+  const fileUrl = file.metadata?.path ? `http://localhost:5000/${file.metadata.path}` : null;
+  const fileType = file?.mimetype;
+  const fileName = file?.filename || "Unknown File";
+
+  if (fileName.endsWith(".pdf")) return <FaFilePdf className="text-red-500 w-6 h-6" />;
+  if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) return <FaFileWord className="text-blue-500 w-6 h-6" />;
+  if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx")) return <FaFileExcel className="text-green-500 w-6 h-6" />;
+  if (fileName.endsWith(".pptx") || fileName.endsWith(".ppt")) return <FaFilePowerpoint className="text-red-500 w-6 h-6" />;
+
+  if (fileType?.startsWith("video/") && fileUrl) {
+    return (
+      <video controls className="w-full h-40 rounded">
+        <source src={fileUrl} type={fileType} />
+        Your browser does not support the video tag.
+      </video>
+    );
+  }
+
+  return <p className="text-gray-500">Unsupported File Type</p>;
+};
+
+  
+
+const handleOpenViewer = (file) => {
+  if (file.metadata?.path) {
+    const fileUrl = `http://localhost:5000/${file.metadata.path}`;
+    setFileUrl(fileUrl);
+    setWebOpen(true);
+  } else {
+    console.error("File URL not found.");
+  }
+};
+
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <main className="flex-1 p-6 ml-64">
-        <div className="flex justify-between items-center mb-6 px-6 py-4">
-          <h1 className="text-2xl font-bold text-gray-700">Teacher Dashboard</h1>
-          <Header setOpen={() => setOpen(true)} />
+        {/* Breadcrumb Navigation */}
+        <div className="flex items-center mb-4">
+          {breadcrumbs.length > 0 && (
+            <button
+              onClick={goBack}
+              className="flex items-center gap-2 text-blue-500 hover:underline"
+            >
+              <FaArrowLeft /> Back
+            </button>
+          )}
+          <h2 className="text-lg font-semibold ml-4">
+            {currentFolder ? currentFolder.name : "Root"}
+          </h2>
         </div>
 
-        {isOpen && <ProfileModal setClose={() => setOpen(false)} />}
-
-        {/* Folders Structure */}
-        <div className="space-y-6">
-          {Object.entries(filesBySchool).map(([school, grades]) => (
-            <div key={school} className="bg-white p-4 shadow rounded-lg">
-              <details className="group">
-                <summary className="cursor-pointer text-lg font-bold text-indigo-700 flex items-center">
-                  🗂 {school}
-                </summary>
-                <div className="ml-6 mt-2">
-                  {Object.entries(grades).map(([grade, subjects]) => (
-                    <details key={grade} className="group">
-                      <summary className="cursor-pointer text-md font-semibold text-blue-600 flex items-center">
-                        📂 {grade}
-                      </summary>
-                      <div className="ml-6 mt-2">
-                        {Object.entries(subjects).map(([subject, quarters]) => (
-                          <details key={subject} className="group">
-                            <summary className="cursor-pointer text-md font-medium text-green-600 flex items-center">
-                              📁 {subject}
-                            </summary>
-                            <div className="ml-6 mt-2">
-                              {Object.entries(quarters).map(([quarter, files]) => (
-                                <details key={quarter} className="group">
-                                  <summary className="cursor-pointer text-md text-gray-700 flex items-center">
-                                    📑 {quarter}
-                                  </summary>
-                                  <div className="ml-6 mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {files.map((file) => {
-                                      const fileUrl = `http://localhost:5000/${file.files[0]?.metadata.path}`;
-                                      const fileType = file.files[0]?.fileType;
-                                      return (
-                                        <div key={file._id} className="bg-gray-50 p-4 border border-gray-200 rounded-lg shadow-md">
-                                          <div className="mt-3">
-                                            {fileType === "video" ? (
-                                              <video controls className="w-full h-40 rounded">
-                                                <source src={fileUrl} type={file.files[0]?.mimetype} />
-                                                Your browser does not support the video tag.
-                                              </video>
-                                            ) : fileType === "image" ? (
-                                              <img src={fileUrl} alt={file.files[0]?.filename} className="w-full h-40 object-cover rounded" />
-                                            ) : (
-                                              fileType === "docx" || fileType === "doc" ? 
-                                              (<img src="/png/docx.png" alt="DOC & DOCX" className="w-20 mx-auto" />)
-                                              : fileType === "pdf" ? 
-                                              (<img src="/png/pdf.png" alt="PDF" className="w-20 mx-auto" />)
-                                              : fileType === "ppt" || fileType === "pptx" ? 
-                                              (<img src="/png/Microsoft-PowerPoint.png" alt="PPT & PPTX" className="w-20 mx-auto" />)
-                                              : fileType === "xlsx" || fileType === "xls" ? 
-                                              (<img src="/png/excel.png" alt="EXCEL" className="w-20 mx-auto" />)
-                                              : null
-                                            )}
-                                          </div>
-
-                                          <div>
-                                            <p className="text-sm text-gray-600"><strong>Description: </strong>{file.description}</p>
-                                            <p className="text-sm text-gray-600"><strong>Filename:</strong> {file.files[0]?.filename}</p>
-                                            <p className="text-sm text-gray-600"><strong>Type:</strong> {fileType}</p>
-                                          </div>
-
-                                          <div className="mt-4 flex space-x-2">
-                                            {fileType !== "video" && fileType !== "image" && (
-                                              <button
-                                                onClick={() => {
-                                                  setSelectedFile({ url: fileUrl, name: file.description });
-                                                  setWebOpen(true);
-                                                }}
-                                                className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700 transition"
-                                              >
-                                                Preview
-                                              </button>
-                                            )}
-                                            <a
-                                              href={fileUrl}
-                                              download
-                                              className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition"
-                                            >
-                                              Download
-                                            </a>
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                </details>
-                              ))}
-                            </div>
-                          </details>
-                        ))}
-                      </div>
-                    </details>
-                  ))}
-                </div>
-              </details>
-            </div>
+        {/* Breadcrumb Links */}
+        <div className="flex space-x-2 mb-4 text-sm text-gray-500">
+          <button className="hover:underline" onClick={() => {
+            setCurrentFolder(null);
+            setBreadcrumbs([]);
+          }}>
+            Root
+          </button>
+          {breadcrumbs.map((crumb, index) => (
+            <span key={index} className="flex items-center">
+              <span className="mx-1">/</span>
+              <button
+                className="hover:underline"
+                onClick={() => {
+                  setCurrentFolder(crumb.folder);
+                  setBreadcrumbs(breadcrumbs.slice(0, index + 1));
+                }}
+              >
+                {crumb.name}
+              </button>
+            </span>
           ))}
+        </div>
+
+        {/* Grid View */}
+        <div className="grid grid-cols-3 gap-4">
+          {!currentFolder &&
+            fileData.map((folder, index) => (
+              <div
+                key={index}
+                className="flex flex-col items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-200"
+                onClick={() => navigateTo(folder)}
+              >
+                <FaFolder className="text-yellow-500 w-12 h-12" />
+                <p className="mt-2 text-center">{folder.name}</p>
+              </div>
+            ))}
+
+          {currentFolder?.subfolders &&
+            Object.values(currentFolder.subfolders).map((folder, index) => (
+              <div
+                key={index}
+                className="flex flex-col items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-200"
+                onClick={() => navigateTo(folder)}
+              >
+                <FaFolder className="text-yellow-500 w-12 h-12" />
+                <p className="mt-2 text-center">{folder.name}</p>
+              </div>
+            ))}
+
+            {currentFolder?.files?.map((file, index) => (
+              <div
+                key={index}
+                className="flex flex-col items-center p-4 border rounded-lg bg-gray-100 cursor-pointer hover:bg-gray-200"
+                onClick={() => handleOpenViewer(file)}
+              >
+                {getFileIcon(file)}
+                <p className="mt-2 text-center text-sm">
+                  {file?.filename || "Filename Missing"}
+                </p>
+              </div>
+            ))}
+
         </div>
       </main>
 
       {/* Web Viewer Modal */}
-      {webOpen && selectedFile && (
-        <WebViewerModal
-          fileUrl={selectedFile.url}
-          FileName={selectedFile.name}
-          WebViewerOpen={webOpen}
-          WebViewerClose={() => setWebOpen(false)}
-        />
-      )}
+      {webOpen && fileUrl && (
+          <WebViewerModal
+            fileUrl={fileUrl}
+            FileName={fileUrl.split('/').pop()} // Extract filename from URL
+            WebViewerOpen={webOpen}
+            WebViewerClose={() => setWebOpen(false)}
+          />
+        )}
     </div>
   );
 }

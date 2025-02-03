@@ -1,12 +1,38 @@
 import { useEffect, useState } from "react";
-import { FaFolder, FaFilePdf, FaFileWord, FaFileExcel, FaArrowLeft } from "react-icons/fa";
+import { FaFolder, FaFilePdf, FaFileWord, FaFileExcel, FaArrowLeft, FaFilePowerpoint } from "react-icons/fa";
 import { getAllFiles } from "../../../services/Api";
-
+import { WebViewerModal } from "../../../components/WebViewer";
 
 export default function UploadedFiles() {
   const [fileData, setFileData] = useState([]);
   const [currentFolder, setCurrentFolder] = useState(null);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
+  const [webOpen, setWebOpen] = useState(false);
+  const [fileUrl, setFileUrl] = useState(""); // Added state to store file URL
+
+  const transformToFolderStructure = (files) => {
+    const structure = { name: "LRS", subfolders: {} };
+  
+    files.forEach((file) => {
+      const { grade, subject, quarter, week, files: fileList } = file;
+      if (!structure.subfolders[grade]) structure.subfolders[grade] = { name: grade, subfolders: {} };
+
+      if (!structure.subfolders[grade].subfolders[subject])
+        structure.subfolders[grade].subfolders[subject] = { name: subject, subfolders: {} };
+
+      if (!structure.subfolders[grade].subfolders[subject].subfolders[quarter])
+        structure.subfolders[grade].subfolders[subject].subfolders[quarter] = { name: quarter, subfolders: {} };
+      
+      if (!structure.subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week])
+        structure.subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week] = { name: week, files: [] };
+  
+      // Store full file objects instead of only filenames
+      structure.subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week].files.push(...fileList);
+    });
+  
+    return [structure];
+  };
+  
 
   useEffect(() => {
     const fetchAllFiles = async () => {
@@ -21,27 +47,6 @@ export default function UploadedFiles() {
     fetchAllFiles();
   }, []);
 
-  const transformToFolderStructure = (files) => {
-    const structure = { name: "LRS", subfolders: {} };
-
-    files.forEach((file) => {
-      const { grade, subject, quarter, week, files: fileList } = file;
-      if (!structure.subfolders[grade]) structure.subfolders[grade] = { name: grade, subfolders: {} };
-      if (!structure.subfolders[grade].subfolders[subject])
-        structure.subfolders[grade].subfolders[subject] = { name: subject, subfolders: {} };
-      if (!structure.subfolders[grade].subfolders[subject].subfolders[quarter])
-        structure.subfolders[grade].subfolders[subject].subfolders[quarter] = { name: quarter, subfolders: {} };
-      if (!structure.subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week])
-        structure.subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week] = { name:  week, files: [] };
-
-      structure.subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week].files.push(
-        ...fileList.map((f) => f.filename)
-      );
-    });
-
-    return [structure];
-  };
-
   const navigateTo = (folder) => {
     setCurrentFolder(folder);
     setBreadcrumbs([...breadcrumbs, { name: folder.name, folder }]);
@@ -55,12 +60,45 @@ export default function UploadedFiles() {
     }
   };
 
-  const getFileIcon = (fileName) => {
-    if (fileName.endsWith(".pdf")) return <FaFilePdf className="text-red-500 w-6 h-6" />;
-    if (fileName.endsWith(".docx")) return <FaFileWord className="text-blue-500 w-6 h-6" />;
-    if (fileName.endsWith(".xlsx")) return <FaFileExcel className="text-green-500 w-6 h-6" />;
-    return null;
-  };
+  const getFileIcon = (file) => {
+  if (!file || typeof file !== "object") {
+    console.warn("Invalid file object:", file);
+    return <p className="text-gray-500">Invalid File</p>;
+  }
+
+  const fileUrl = file.metadata?.path ? `http://localhost:5000/${file.metadata.path}` : null;
+  const fileType = file?.mimetype;
+  const fileName = file?.filename || "Unknown File";
+
+  if (fileName.endsWith(".pdf")) return <FaFilePdf className="text-red-500 w-6 h-6" />;
+  if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) return <FaFileWord className="text-blue-500 w-6 h-6" />;
+  if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx")) return <FaFileExcel className="text-green-500 w-6 h-6" />;
+  if (fileName.endsWith(".pptx") || fileName.endsWith(".ppt")) return <FaFilePowerpoint className="text-red-500 w-6 h-6" />;
+
+  if (fileType?.startsWith("video/") && fileUrl) {
+    return (
+      <video controls className="w-full h-40 rounded">
+        <source src={fileUrl} type={fileType} />
+        Your browser does not support the video tag.
+      </video>
+    );
+  }
+
+  return <p className="text-gray-500">Unsupported File Type</p>;
+};
+
+  
+
+const handleOpenViewer = (file) => {
+  if (file.metadata?.path) {
+    const fileUrl = `http://localhost:5000/${file.metadata.path}`;
+    setFileUrl(fileUrl);
+    setWebOpen(true);
+  } else {
+    console.error("File URL not found.");
+  }
+};
+
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -106,7 +144,6 @@ export default function UploadedFiles() {
 
         {/* Grid View */}
         <div className="grid grid-cols-3 gap-4">
-          {/* Show Root Folders when currentFolder is null */}
           {!currentFolder &&
             fileData.map((folder, index) => (
               <div
@@ -114,12 +151,11 @@ export default function UploadedFiles() {
                 className="flex flex-col items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-200"
                 onClick={() => navigateTo(folder)}
               >
-                <FaFolder className="text-yellow-500 w-12 h-12" />
+                <FaFolder className="text-yellow-400 w-12 h-12" />
                 <p className="mt-2 text-center">{folder.name}</p>
               </div>
             ))}
 
-          {/* Show Subfolders and Files inside a folder */}
           {currentFolder?.subfolders &&
             Object.values(currentFolder.subfolders).map((folder, index) => (
               <div
@@ -127,19 +163,36 @@ export default function UploadedFiles() {
                 className="flex flex-col items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-200"
                 onClick={() => navigateTo(folder)}
               >
-                <FaFolder className="text-yellow-500 w-12 h-12" />
+                <FaFolder className="text-yellow-400 w-12 h-12" />
                 <p className="mt-2 text-center">{folder.name}</p>
               </div>
             ))}
 
-          {currentFolder?.files?.map((file, index) => (
-            <div key={index} className="flex flex-col items-center p-4 border rounded-lg bg-gray-100">
-              {getFileIcon(file)}
-              <p className="mt-2 text-center text-sm">{file}</p>
-            </div>
-          ))}
+            {currentFolder?.files?.map((file, index) => (
+              <div
+                key={index}
+                className="flex flex-col items-center p-4 border rounded-lg bg-gray-100 cursor-pointer hover:bg-gray-200"
+                onClick={() => handleOpenViewer(file)}
+              >
+                {getFileIcon(file)}
+                <p className="mt-2 text-center text-sm">
+                  {file?.filename || "Filename Missing"}
+                </p>
+              </div>
+            ))}
+
         </div>
       </main>
+
+      {/* Web Viewer Modal */}
+      {webOpen && fileUrl && (
+          <WebViewerModal
+            fileUrl={fileUrl}
+            FileName={fileUrl.split("/").pop()} // Extract filename from URL
+            WebViewerOpen={webOpen}
+            WebViewerClose={() => setWebOpen(false)}
+          />
+        )}
     </div>
   );
 }

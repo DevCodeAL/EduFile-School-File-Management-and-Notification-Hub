@@ -128,7 +128,6 @@ const PrincipalDashboard = () => {
 };
 
 
-
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       {/* Main Content */}
@@ -233,10 +232,10 @@ const PrincipalDashboard = () => {
         {isGradesOpen && (
           <div
             id="multi-dropdown"
-            className="z-10 absolute bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700"
+            className="z-10 absolute bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700" 
           >
             <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
-              {["Kindergarten", "Grade 1", "Grade 2", "Grade 3"].map((grade) => (
+              {["Kindergarten", "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6"].map((grade) => (
                 <li key={grade}>
                   <button
                   type="button"
@@ -296,7 +295,7 @@ const PrincipalDashboard = () => {
                 {/* Weeks */}
                 {isWeek && (
                   <div
-                    id="quartersDropdown"
+                    id="weeksDropdown"
                     className="z-10 absolute left-full translate-x-36 top-0 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700 overflow-y-auto"
                      style={{ maxHeight: "200px" }} 
                   >

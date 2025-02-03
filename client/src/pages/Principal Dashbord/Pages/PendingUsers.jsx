@@ -70,7 +70,7 @@ export default function PendingUsers() {
           <section className="mt-8 bg-white shadow-lg rounded-xl p-6">
             <h2 className="text-xl font-semibold text-gray-700 mb-4">Pending Applications</h2>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-auto max-h-96">
               <table className="w-full border-collapse rounded-xl overflow-hidden">
                 <thead>
                   <tr className="bg-indigo-600 text-white">
