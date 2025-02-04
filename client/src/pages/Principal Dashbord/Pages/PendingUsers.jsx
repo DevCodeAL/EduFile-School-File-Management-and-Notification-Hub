@@ -4,24 +4,35 @@ import ProfileModal from "../../../components/Profile";
 import { getUserPending, userApproval, rejectItem } from "../../../services/Api";
 import SuccessModal from "../Modal/SuccessModal";
 import RejectModal from "../Modal/RejectModal";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function PendingUsers() {
+  const { user } = useAuth();
   const [isOpen, setOpen] = useState(false);
   const [isApproved, setApproved] = useState(false);
   const [isReject, setReject] = useState(false);
   const [selectedTeacherId, setSelectedTeacherId] = useState(null);
   const [pending, setPending] = useState([]);
 
-  const fetchAllPendingTeachers = async () => {
-    try {
-      const response = await getUserPending();
-      setPending(response);
-    } catch (error) {
-      console.error("No user to be approved!", error);
-    }
-  };
-
+  
+// Fetch all pending user
   useEffect(() => {
+    const userId = user;
+    if(!userId){
+     return console.log('No user pending exist!');
+    }
+
+    const fetchAllPendingTeachers = async () => {
+      const pendingUserTeacherId = userId?.data._id
+
+      try {
+        const response = await getUserPending(pendingUserTeacherId);
+        setPending(response);
+      } catch (error) {
+        console.error("No user to be approved!", error);
+      }
+    };
+
     fetchAllPendingTeachers();
   }, []);
 

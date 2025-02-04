@@ -13,7 +13,6 @@ const router = express.Router();
 // Registration for Principal
 router.post('/principal', async (req, res)=> {
     const { role, school, fullname, email, password } = req.body;
-    console.log('Incoming data:', req.body);
     try {
         if(!role || !school || !fullname || !email || !password){
             return res.status(400).json({message: 'All Required Faileds!'});
@@ -69,6 +68,7 @@ router.post('/associate', async (req, res) => {
     }
 });
 
+
 // Route to get all principals with their associated teachers---------
 router.get('/all-principals', async (req, res) => {
     try {
@@ -82,7 +82,6 @@ router.get('/all-principals', async (req, res) => {
 // Registration for Teacher
 router.post('/register', async (req, res)=>{
         const { role, school, fullname, email, password } = req.body;
-        console.log('Incoming data:' , req.body);
     try{
 
         if(!role || !school || !fullname || !email || !password){
@@ -117,7 +116,6 @@ router.post('/register', async (req, res)=>{
 // Approve for Teachers
 router.put("/approve/:id", async (req, res) => {
     const { id } = req.params;
-    console.log("Incoming parameter:", id);
 
     try {
         const teacher = await Teacher.findById(id);
@@ -148,17 +146,25 @@ router.put("/approve/:id", async (req, res) => {
 
 
 //   Get Pending teachers
-  router.get("/pending-teachers", async (req, res) => {
+  router.get("/pending-teachers/:principalUserId", async (req, res) => {
+    const { principalUserId } = req.params;
     try {
-      const pendingTeachers = await Teacher.find({ status: "pending" });
+      const principal = await PrincipalItems.findById(principalUserId).populate("teachers");
+
+        if(!principal){
+            return res.status(400).json({message: 'No pending user!'});
+        }
+
+        const pendingTeachers = principal.teachers.filter(teacher => teacher.status === 'pending');
+
       res.status(200).json(pendingTeachers);
     } catch (error) {
       res.status(500).json({ error: "Error fetching pending teachers" });
     }
   });
 
+
 // Reject teacher registration
-// Delete
 router.delete('/reject/:id', async (req, res) => {
     try {
 
@@ -171,7 +177,6 @@ router.delete('/reject/:id', async (req, res) => {
     }
   });
   
-  
 
 // Route to get all teachers-----------
 router.get('/all-teachers', async (req, res) => {
@@ -182,6 +187,28 @@ router.get('/all-teachers', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+
+// Get all teachers under a specific principal
+router.get("/specificteachers/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+
+  
+      // Fetch principal and populate teachers
+      const principal = await PrincipalItems.findById(id).populate("teachers");
+  
+      if (!principal) {
+        return res.status(404).json({ message: "Principal not found" });
+      }
+  
+      res.json(principal.teachers);
+    } catch (error) {
+      res.status(500).json({ error: "Internal Server Error", details: error.message });
+    }
+  });
+  
+
 
 // Login for Administrator
 router.post('/admin', async (req, res) => {
@@ -253,8 +280,6 @@ router.get('/profile', authMiddleware, async (req, res) => {
 // Login Users
 router.post('/user', async (req, res) => {
     const { role, email, password } = req.body;
-    console.log('Incoming body: ', req.body);
-
     try {
         // Check for missing fields
         if (!role || !email || !password) {

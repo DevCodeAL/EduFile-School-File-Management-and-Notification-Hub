@@ -55,6 +55,19 @@ export const createAssociate = async (userData)=>{
   }
 }
 
+const API_SpecificTeachers = "http://localhost:5000/api/specificteachers";
+
+export const getAllSpecificTeachers = async (id)=> {
+  try {
+    const response = await axios.get(`${API_SpecificTeachers}/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("No specific teachers exist", error);
+    throw error;
+  }
+}
+
+
 // Get All uploaded files
 const API_Files = 'http://localhost:5000/api/file';
 
@@ -98,9 +111,9 @@ export const rejectItem = async (id)=> {
 // API for get all pending teachers
 const API_userPendingList = 'http://localhost:5000/api/pending-teachers';
 
-export const getUserPending = async ()=>{
+export const getUserPending = async (principalUserId)=>{
   try {
-    const response = await axios.get(API_userPendingList);
+    const response = await axios.get(`${API_userPendingList}/${principalUserId}`);
     return response.data;
   } catch (error) {
     console.error("No teachers users exist!", error);

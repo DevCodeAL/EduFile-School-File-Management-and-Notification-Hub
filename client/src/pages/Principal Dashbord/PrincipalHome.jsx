@@ -2,8 +2,17 @@ import React, { useState, useEffect } from "react";
 import Header from "../../components/Header";
 import ProfileModal from "../../components/Profile";
 import UploadLoading from "../../Success/UploadLoading";
+import { getAllSpecificTeachers } from "../../services/Api";
+import { useAuth } from "../../context/AuthContext";
+import { getUserPending } from "../../services/Api";
+import { getAllFiles } from "../../services/Api";
+
 
 const PrincipalDashboard = () => {
+  const [isSpecificUser, setisSpecificUser] = useState([]);
+  const { user } = useAuth();
+  const [pending, setPending] = useState([]);
+  const [files, setFiles] = useState([]);
   const [isGradesOpen, setGradesOpen] = useState(false);
   const [isSubjectsOpen, setSubjectsOpen] = useState(false);
   const [isQuartersOpen, setQuartersOpen] = useState(false);
@@ -128,6 +137,55 @@ const PrincipalDashboard = () => {
 };
 
 
+
+  
+// Fetch all pending user
+  useEffect(() => {
+    const userId = user;
+    if(!userId){
+     return console.log('No user pending exist!');
+    }
+
+    const fetchAllPendingTeachers = async () => {
+      const pendingUserTeacherId = userId?.data._id
+
+      try {
+        const response = await getUserPending(pendingUserTeacherId);
+        const allFiles = await getAllFiles();
+        setFiles(allFiles);
+        setPending(response);
+      } catch (error) {
+        console.error("No user to be approved!", error);
+      }
+    };
+
+    fetchAllPendingTeachers();
+  }, []);
+
+
+// Get All Specific teachers
+useEffect(()=>{
+  const userId = user;
+  if(!userId){
+   return console.log('No user!');
+   }
+
+  const getTeachers = async()=>{
+    const  id  = userId?.data._id;
+    try {
+      const response = await getAllSpecificTeachers(id);
+      setisSpecificUser(response);
+    } catch (error) {
+      console.log('No user exist!', error);
+    }
+  }
+
+  getTeachers();
+
+},[])
+
+
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       {/* Main Content */}
@@ -154,15 +212,15 @@ const PrincipalDashboard = () => {
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white shadow-lg rounded-lg p-4">
             <h2 className="text-gray-500 text-sm">Total Teachers</h2>
-            <p className="text-2xl font-bold text-blue-500">123</p>
+            <p className="text-2xl font-bold text-blue-500">{isSpecificUser.length}</p>
           </div>
           <div className="bg-white shadow-lg rounded-lg p-4">
             <h2 className="text-gray-500 text-sm">Pending Applications</h2>
-            <p className="text-2xl font-bold text-orange-500">5</p>
+            <p className="text-2xl font-bold text-orange-500">{pending.length}</p>
           </div>
           <div className="bg-white shadow-lg rounded-lg p-4">
             <h2 className="text-gray-500 text-sm">Files Uploaded</h2>
-            <p className="text-2xl font-bold text-green-500">47</p>
+            <p className="text-2xl font-bold text-green-500">{files.length}</p>
           </div>
         </section>
 
@@ -187,6 +245,38 @@ const PrincipalDashboard = () => {
             <div  className="relative bg-white rounded-lg shadow-lg p-6 w-96 sm:w-5/6 max-w-lg">
               <h2 className="text-xl font-bold text-gray-700 mb-4">Add New File</h2>
               <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+       
+              <div className="col-span-2">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Select Grade
+                </label>
+                <button
+                  id="multiLevelDropdownButton"
+                  onClick={() => setGradesOpen(!isGradesOpen)}
+                  className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 inline-flex items-center justify-between dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  type="button"
+                >
+                  Dropdown button
+                  <svg
+                    className="w-2.5 h-2.5"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 10 6"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="m1 1 4 4 4-4"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+
+
                 {/* Description */}
                 <div  className="col-span-2">
                   <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -203,46 +293,37 @@ const PrincipalDashboard = () => {
                 </div>
 
       <div>
-      <label className="block text-gray-700 text-sm font-bold mb-2">Select Grade</label>
-        <button
-          id="multiLevelDropdownButton"
-          onClick={() => setGradesOpen(!isGradesOpen)}
-          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          type="button"
-        >
-          Dropdown button
-          <svg
-            className="w-2.5 h-2.5 ml-3"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 10 6"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="m1 1 4 4 4-4"
-            />
-          </svg>
-        </button>
 
         {/* Grades Dropdown */}
         {isGradesOpen && (
           <div
             id="multi-dropdown"
-            className="z-10 absolute bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700" 
+          className="z-10 absolute top-36 bg-slate-50 divide-y divide-gray-200 rounded-lg shadow-lg w-48 dark:bg-gray-800 dark:divide-gray-700"
           >
-            <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
+           <ul className="py-2 text-sm text-gray-800 dark:text-gray-200">
               {["Kindergarten", "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6"].map((grade) => (
                 <li key={grade}>
                   <button
                   type="button"
                     onClick={(e) => handleGradeSelect(grade, e)}
-                    className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                     className="flex items-center justify-between w-full px-4 py-2 hover:bg-indigo-100 dark:hover:bg-indigo-600 dark:hover:text-white"
                   >
                     {grade}
+                    <svg
+              className="w-3 h-3 text-indigo-600 dark:text-indigo-400"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 10 6"
+            >
+              <path
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="m1 1 4 4 4-4"
+              />
+            </svg>
                   </button>
                 </li>
               ))}
@@ -322,30 +403,34 @@ const PrincipalDashboard = () => {
         )}
       </div>
 
-     {isSelectedOpen && ( <div className="absolute bg-white shadow-lg rounded-lg border border-gray-200">
-        <div className="flex justify-self-end p-1">
-           <button onClick={() =>setSelectedOpen(false)}>✖</button>
-        </div>
-        <h3 className="text-lg font-semibold text-gray-700 mb-3">📌 Selected Options</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-md">
-            <p className="text-gray-600 text-sm">Selected Grade</p>
-            <p className="text-lg font-medium text-blue-600">{selectedGrade || "None"}</p>
-          </div>
-          <div className="p-3 bg-green-50 border-l-4 border-green-500 rounded-md">
-            <p className="text-gray-600 text-sm">Selected Subject</p>
-            <p className="text-lg font-medium text-green-600">{selectedSubject || "None"}</p>
-          </div>
-          <div className="p-3 bg-yellow-50 border-l-4 border-yellow-500 rounded-md">
-            <p className="text-gray-600 text-sm">Selected Quarter</p>
-            <p className="text-lg font-medium text-yellow-600">{selectedQuarter || "None"}</p>
-          </div>
-          <div className="p-3 bg-violet-50 border-l-4 border-violet-500 rounded-md">
-            <p className="text-gray-600 text-sm">Selected Week</p>
-            <p className="text-lg font-medium text-violet-600">{selectedWeek || "None"}</p>
-          </div>
-        </div>
-      </div>)}
+      {isSelectedOpen && (
+  <div className="col-span-2 absolute inset-0  bg-white shadow-lg rounded-lg border border-gray-200 p-4">
+    <div className="flex justify-end p-1">
+      <button onClick={() => setSelectedOpen(false)} className="text-gray-600 hover:text-gray-800">
+        ✖
+      </button>
+    </div>
+    <h3 className="text-lg font-semibold text-gray-700 mb-3 text-center">📌 Selected Options</h3>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-md text-center">
+        <p className="text-gray-600 text-sm">Selected Grade</p>
+        <p className="text-lg font-medium text-blue-600">{selectedGrade || "None"}</p>
+      </div>
+      <div className="p-3 bg-green-50 border-l-4 border-green-500 rounded-md text-center">
+        <p className="text-gray-600 text-sm">Selected Subject</p>
+        <p className="text-lg font-medium text-green-600">{selectedSubject || "None"}</p>
+      </div>
+      <div className="p-3 bg-yellow-50 border-l-4 border-yellow-500 rounded-md text-center">
+        <p className="text-gray-600 text-sm">Selected Quarter</p>
+        <p className="text-lg font-medium text-yellow-600">{selectedQuarter || "None"}</p>
+      </div>
+      <div className="p-3 bg-violet-50 border-l-4 border-violet-500 rounded-md text-center">
+        <p className="text-gray-600 text-sm">Selected Week</p>
+        <p className="text-lg font-medium text-violet-600">{selectedWeek || "None"}</p>
+      </div>
+    </div>
+  </div>
+)}
 
               
                {/* Input Element */}
@@ -419,8 +504,8 @@ const PrincipalDashboard = () => {
               <table className="w-full border-collapse rounded-xl overflow-hidden">
                 <thead>
                   <tr className="bg-indigo-600 text-white">
+                  <th className="px-6 py-3 text-left font-medium">Role</th>
                     <th className="px-6 py-3 text-left font-medium">Name</th>
-                    <th className="px-6 py-3 text-left font-medium">Role</th>
                     <th className="px-6 py-3 text-left font-medium">School</th>
                     <th className="px-6 py-3 text-left font-medium">Email</th>
                     <th className="px-6 py-3 text-left font-medium">Status</th>
@@ -428,30 +513,20 @@ const PrincipalDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="bg-gray-50 hover:bg-gray-100 transition">
-                    <td className="px-6 py-4 border-b">John Doe</td>
-                    <td className="px-6 py-4 border-b">Math Teacher</td>
-                    <td className="px-6 py-4 border-b">Sunrise High School</td>
-                    <td className="px-6 py-4 border-b">john@example.com</td>
-                    <td className="px-6 py-4 border-b text-green-500 font-semibold">Active</td>
-                    <td className="px-6 py-4 border-b">
-                      <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition">
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                  <tr className="bg-white hover:bg-gray-100 transition">
-                    <td className="px-6 py-4 border-b">Jane Smith</td>
-                    <td className="px-6 py-4 border-b">Science Teacher</td>
-                    <td className="px-6 py-4 border-b">Green Valley Academy</td>
-                    <td className="px-6 py-4 border-b">jane@example.com</td>
-                    <td className="px-6 py-4 border-b text-red-500 font-semibold">Inactive</td>
-                    <td className="px-6 py-4 border-b">
-                      <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition">
-                        View
-                      </button>
-                    </td>
-                  </tr>
+                  {isSpecificUser.map(item => (
+                     <tr key={item._id} className="bg-white hover:bg-gray-100 transition">
+                      <td className="px-6 py-4 border-b">{item.role.toUpperCase()}</td>
+                     <td className="px-6 py-4 border-b">{item.fullname}</td>
+                     <td className="px-6 py-4 border-b">{item.school}</td>
+                     <td className="px-6 py-4 border-b">{item.email}</td>
+                     <td className="px-6 py-4 border-b text-red-500 font-semibold">Inactive</td>
+                     <td className="px-6 py-4 border-b">
+                       <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition">
+                         View
+                       </button>
+                     </td>
+                   </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

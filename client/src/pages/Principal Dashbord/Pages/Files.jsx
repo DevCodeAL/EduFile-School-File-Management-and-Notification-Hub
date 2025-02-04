@@ -11,7 +11,7 @@ export default function UploadedFiles() {
   const [fileUrl, setFileUrl] = useState(""); // Added state to store file URL
 
   const transformToFolderStructure = (files) => {
-    const structure = { name: "LRS", subfolders: {} };
+    const structure = { name: "Learning Record Store (LRS)", subfolders: {} };
   
     files.forEach((file) => {
       const { grade, subject, quarter, week, files: fileList } = file;
