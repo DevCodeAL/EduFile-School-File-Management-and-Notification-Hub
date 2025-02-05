@@ -81,11 +81,33 @@ export default function CreateModal({ openModal, setOpenModal }) {
               className="w-full px-4 py-2 border rounded-lg  border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select School</option>
-              {[...Array(28)].map((_, index) => (
-                <option key={index + 1} value={`school${index + 1}`}>
-                  School {index + 1}
-                </option>
-              ))}
+              <option value="Ayos Lomboy Elementary School">Ayos Lomboy Elementary School</option>
+              <option value="Bantug Elementary School">Bantug Elementary School</option>
+              <option value="Bunol Integrated School">Bunol Integrated School</option>
+              <option value="Caballero Elementary School">Caballero Elementary School</option>
+              <option value="Cabaruan Elementary School">Cabaruan Elementary School</option>
+              <option value="Camiing Elementary School">Camiing Elementary School</option>
+              <option value="Cavite Elementary School">Cavite Elementary School</option>
+              <option value="Cawayang Bugtong Elementary School">Cawayang Bugtong Elementary School</option>
+              <option value="Consuelo Elementary School">Consuelo Elementary School</option>
+              <option value="Culong Elementary School">Culong Elementary School</option>
+              <option value="Don Pedro Elementary School">Don Pedro Elementary School</option>
+              <option value="Faigal Elementary School">Faigal Elementary School</option>
+              <option value="Guimba East Central School">Guimba East Central School</option>
+              <option value="Guiset Elementary School">Guiset Elementary School</option>
+              <option value="Manacsac Elementary School">Manacsac Elementary School</option>
+              <option value="Mataranoc Elementary School">Mataranoc Elementary School</option>
+              <option value="Naglabrahan Elementary School">Naglabrahan Elementary School</option>
+              <option value="Nagpandayan Elementary School">Nagpandayan Elementary School</option>
+              <option value="San Andres Elementary School">San Andres Elementary School</option>
+              <option value="San Bernardino Integrated School">San Bernardino Integrated School</option>
+              <option value="San Marcelino Integrated School">San Marcelino Integrated School</option>
+              <option value="San Roque Elementary School">San Roque Elementary School</option>
+              <option value="Sinulatan Elementary School">Sinulatan Elementary School</option>
+              <option value="Sta. Ana Integrated School">Sta. Ana Integrated School</option>
+              <option value="Sta. Cruz Elementary School">Sta. Cruz Elementary School</option>
+              <option value="Sta. Lucia Elementary School">Sta. Lucia Elementary School</option>
+              <option value="Triala Elementary School">Triala Elementary School</option>    
             </select>
                 </div>
                 <div>

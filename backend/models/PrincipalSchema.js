@@ -6,6 +6,11 @@ const FileSchema = new Schema({
     type: String,
     required: true,
   },
+
+  typeSchool:{
+    type: String,
+    required: true,
+  },
   
   grade: {
     type: String,

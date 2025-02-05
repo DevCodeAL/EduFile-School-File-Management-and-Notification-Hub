@@ -8,6 +8,7 @@ import upload from '../middleware/uploadMiddleware.js';
 import { io } from '../server.js';
 import { sendEmailToTeachers } from '../controllers/emailService.js';
 import { sendApprovalEmail } from '../controllers/sendEmailAproval.js';
+import { sendPrincipalsNotificationsEmail } from '../controllers/principalEmailServices.js';
 const router = express.Router();
 
 // Registration for Principal
@@ -34,6 +35,14 @@ router.post('/principal', async (req, res)=> {
               password: hashPassword,
         });
             await createNewItems.save();
+
+            const principalEmail = await PrincipalItems.find({role: 'principal'}).select('email');
+            const getEmail = principalEmail.map(t => t.email);
+
+            await sendPrincipalsNotificationsEmail(getEmail);
+
+            // Emit real-time notification to all connected teachers
+            io.emit("principalAccount", { message: `Your principal account is created .` });
 
             res.status(200).json({
                 message: 'Created Successfully',
@@ -385,7 +394,7 @@ router.post('/user', async (req, res) => {
 
     // Upload files , Pdf, Docx, Doc Image, Videos
 router.post("/stats", upload.single("file"), async (req, res) => {
-    const {  description, grade, subject, quarter, week } = req.body;
+    const {  description, typeSchool, grade, subject, quarter, week } = req.body;
     console.log('Incoming data', req.body);
     console.log("File Data:", req.file);
 
@@ -414,6 +423,7 @@ router.post("/stats", upload.single("file"), async (req, res) => {
       // Create and save file document
       const newItem = new Files({
         description,
+        typeSchool,
        grade,
        subject,
        quarter,
