@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { FaFilePdf, FaFileWord, FaFileExcel, FaFilePowerpoint } from "react-icons/fa";
 import Header from "../../components/Header";
 import ProfileModal from "../../components/Profile";
 import UploadLoading from "../../Success/UploadLoading";
@@ -13,13 +14,14 @@ const PrincipalDashboard = () => {
   const { user } = useAuth();
   const [pending, setPending] = useState([]);
   const [files, setFiles] = useState([]);
+  const [isTypeSchool, setTypeSchool] = useState(false);
   const [isGradesOpen, setGradesOpen] = useState(false);
   const [isSubjectsOpen, setSubjectsOpen] = useState(false);
   const [isQuartersOpen, setQuartersOpen] = useState(false);
   const [isWeek, setWeek] = useState(false);
-// Modal Ready to Upload Indicator
-  const [isSelectedOpen, setSelectedOpen] = useState(false);
+  const [isSummary, setisSummary] = useState(false);
 
+  const [selectedSchool, setSelectedSchool] = useState("")
   const [selectedGrade, setSelectedGrade] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedQuarter, setSelectedQuarter] = useState("");
@@ -31,6 +33,7 @@ const PrincipalDashboard = () => {
   const [formData, setFormData] = useState({ 
     description: "", 
     file: null,
+    typeSchool: '',
     grade: '',
     subject: '',
      quarter: '',
@@ -40,19 +43,25 @@ const PrincipalDashboard = () => {
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
+      typeSchool: selectedSchool,
       grade: selectedGrade,
       subject: selectedSubject,
       quarter: selectedQuarter,
       week: selectedWeek,
     }));
-  }, [selectedWeek, selectedGrade, selectedSubject, selectedQuarter]);
+  }, [selectedSchool, selectedWeek, selectedGrade, selectedSubject, selectedQuarter]);
 
 // Handle Dropdown Event
+const handleSchoolSelect = (school, e)=>{
+  e.stopPropagation();
+    setSelectedSchool(school);
+    setGradesOpen(true);
+}
+
   const handleGradeSelect = (grade, e)=>{
     e.stopPropagation();
     setSelectedGrade(grade);
     setSubjectsOpen(true);
-    setSelectedOpen(true);
   };
 
   const handleSubjectSelect = (subject, e)=>{
@@ -74,6 +83,8 @@ const PrincipalDashboard = () => {
     setSubjectsOpen(false);
     setQuartersOpen(false);
     setWeek(false);
+    setTypeSchool(false);
+   setisSummary(true);
   }
 
   
@@ -89,17 +100,83 @@ const PrincipalDashboard = () => {
     setFormData((prev) => ({ ...prev, file }));
   };
 
+  // Preview
+  const renderFilePreview = () => {
+    if (formData.file) {
+      const file = formData.file;
+      const fileURL = URL.createObjectURL(file);
+      
+      if (file.type.startsWith('image/')) {
+        // For image files, display a preview
+        return (
+          <>
+          <img src={fileURL} alt="File preview" className="w-1/2 object-cover" />;
+          </>
+        )
+      } else if (file.type.startsWith('video/')) {
+        // For video files, display a preview with controls
+        return (
+           <>
+           <video src={fileURL} controls className="w-1/2">
+            Your browser does not support the video tag.
+          </video>
+           </>
+        );
+      } else if (file.type === 'application/pdf') {
+        // For PDF files, display the name and a preview option
+        return (
+          <>
+          <FaFilePdf/>
+          <span className="bg-slate-100 p-2" >{file.name}</span>
+          </>
+        )
+      } else if (file.type === 'application/msword' || 
+         file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        return (
+          <>
+           <FaFileWord/>
+           <span className="bg-slate-100 p-2" >{file.name}</span>
+          </>
+        )
+      } else if (  file.type === 'application/vnd.ms-powerpoint' ||
+         file.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
+       return (
+        <>
+         <FaFilePowerpoint/>
+         <span className="bg-slate-100 p-2" >{file.name}</span>
+        </>
+       )
+       
+      } else if( file.type === 'application/vnd.ms-excel' ||
+         file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        return(
+          <>
+           <FaFileExcel/>
+           <span className="bg-slate-100 p-2" >{file.name}</span>
+          </>
+        )
+
+      } else {
+          return <p>Unsupported Files</p>
+      }
+    }
+    return null;
+  };
+  
+
   // Hande Reset Form
   const handleReset = ()=>{
    setFormData({ 
     description: "", 
     file: null,
+    typeSchool: '',
     grade: '',
     subject: '',
      quarter: '',
      week: '',
   });
-
+  
+  setSelectedSchool('');
   setSelectedGrade('');
   setSelectedSubject('');
   setSelectedQuarter('');
@@ -114,6 +191,7 @@ const PrincipalDashboard = () => {
     const data = new FormData();
     data.append("description", formData.description);
     data.append("file", formData.file);
+    data.append("typeSchool", formData.typeSchool);
     data.append("grade", formData.grade);
     data.append("subject", formData.subject);
     data.append("quarter", formData.quarter);
@@ -135,7 +213,6 @@ const PrincipalDashboard = () => {
       alert(error.message);
     }
 };
-
 
 
   
@@ -242,18 +319,18 @@ useEffect(()=>{
         {/* Form Modal */}
         {isFormOpen && (
           <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-10">
-            <div  className="relative bg-white rounded-lg shadow-lg p-6 w-96 sm:w-5/6 max-w-lg">
+            <div  className="relative bg-white rounded-lg shadow-lg p-5 w-96 sm:w-5/6 max-w-md">
               <h2 className="text-xl font-bold text-gray-700 mb-4">Add New File</h2>
               <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
        
               <div className="col-span-2">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Select Grade
+                  Select Type of School
                 </label>
                 <button
                   id="multiLevelDropdownButton"
-                  onClick={() => setGradesOpen(!isGradesOpen)}
-                  className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 inline-flex items-center justify-between dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  onClick={() => setTypeSchool(!isTypeSchool)}
+                  className="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 inline-flex items-center justify-between dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                   type="button"
                 >
                   Dropdown button
@@ -275,8 +352,6 @@ useEffect(()=>{
                 </button>
               </div>
 
-
-
                 {/* Description */}
                 <div  className="col-span-2">
                   <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -287,221 +362,303 @@ useEffect(()=>{
                     value={formData.description}
                     onChange={handleInputChange}
                     className="w-full border rounded-lg px-3 py-2 text-gray-700"
-                    rows="3"
                     required
                   ></textarea>
                 </div>
+            <div>
 
-      <div>
+    {isTypeSchool && (
+    <div className="fixed inset-0  bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div
+        id="multi-dropdown"
+        className="absolute z-10  top-36 bg-slate-50 divide-y divide-gray-200 rounded-lg shadow-lg w-1/3 dark:bg-gray-800 dark:divide-gray-700"
+      >
+        {/* School type dropdown */}
+    <div
+      id="schoolDropdown"
+      className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700"
+    >
+      {/* Heading */}
+      <div className="px-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-indigo-500 to-indigo-700 dark:from-indigo-700 dark:to-indigo-900 rounded-t-xl shadow-md">
+        Select type of school
+      </div>
 
-        {/* Grades Dropdown */}
-        {isGradesOpen && (
-          <div
-            id="multi-dropdown"
-          className="z-10 absolute top-36 bg-slate-50 divide-y divide-gray-200 rounded-lg shadow-lg w-48 dark:bg-gray-800 dark:divide-gray-700"
-          >
-           <ul className="py-2 text-sm text-gray-800 dark:text-gray-200">
-              {["Kindergarten", "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6"].map((grade) => (
-                <li key={grade}>
-                  <button
-                  type="button"
-                    onClick={(e) => handleGradeSelect(grade, e)}
-                     className="flex items-center justify-between w-full px-4 py-2 hover:bg-indigo-100 dark:hover:bg-indigo-600 dark:hover:text-white"
-                  >
-                    {grade}
-                    <svg
-              className="w-3 h-3 text-indigo-600 dark:text-indigo-400"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 10 6"
+      <ul className="py-2 text-sm text-gray-800 dark:text-gray-200 p-2">
+        {[
+          "Integrated School",
+          "Elementary School",
+        ].map((school, index, array) => (
+          <li key={school}>
+            <button
+              type="button"
+              onClick={(e) => handleSchoolSelect(school, e)}
+              className="flex items-center justify-between w-full px-4 py-3 transition-all duration-300 ease-in-out rounded-md hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white hover:shadow-md"
             >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="m1 1 4 4 4-4"
-              />
-            </svg>
-                  </button>
-                </li>
-              ))}
-            </ul>
+              {school}
+            </button>
 
-            {/* Subjects Dropdown */}
-            {isSubjectsOpen && (
-              <div
-                id="subjectDropdown"
-                className="z-10 absolute left-full top-0 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700"
-              >
-                <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
-                  {["English", "Filipino", "Science", "Math"].map((subject) => (
-                    <li key={subject}>
-                      <button
-                      type="button"
-                        onClick={(e) => handleSubjectSelect(subject, e)}
-                        className="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                      >
-                        {subject}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* Quarters Dropdown */}
-                {isQuartersOpen && (
-                  <div
-                    id="quartersDropdown"
-                    className="z-10 absolute left-full top-0 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700"
-                  >
-                    <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
-                      {["1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"].map(
-                        (quarter) => (
-                          <li key={quarter}>
-                            <button
-                            type="button"
-                              onClick={(e) => handleQuarterSelect(quarter, e)}
-                              className="block px-4 py-2 hover:bg-gray-100 hover:underline dark:hover:bg-gray-600 dark:hover:text-white"
-                            >
-                              {quarter}
-                            </button>
-                          </li>
-                        )
-                      )}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Weeks */}
-                {isWeek && (
-                  <div
-                    id="weeksDropdown"
-                    className="z-10 absolute left-full translate-x-36 top-0 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700 overflow-y-auto"
-                     style={{ maxHeight: "200px" }} 
-                  >
-                    <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
-                      {["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12"].map(
-                        (week) => (
-                          <li key={week}>
-                            <button
-                            type="button"
-                              onClick={(e) => handleWeekSelect(week, e)}
-                              className="block px-4 py-2 hover:bg-gray-100 hover:underline dark:hover:bg-gray-600 dark:hover:text-white"
-                            >
-                              {week}
-                            </button>
-                          </li>
-                        )
-                      )}
-                    </ul>
-                  </div>
-                )}
-              </div>
+            {/* Underline separator (except for last item) */}
+            {index !== array.length - 1 && (
+              <div className="border-b border-gray-200 dark:border-gray-600 mx-4 my-1"></div>
             )}
-          </div>
-        )}
-      </div>
-
-      {isSelectedOpen && (
-  <div className="col-span-2 absolute inset-0  bg-white shadow-lg rounded-lg border border-gray-200 p-4">
-    <div className="flex justify-end p-1">
-      <button onClick={() => setSelectedOpen(false)} className="text-gray-600 hover:text-gray-800">
-        ✖
-      </button>
+          </li>
+        ))}
+      </ul>
     </div>
-    <h3 className="text-lg font-semibold text-gray-700 mb-3 text-center">📌 Selected Options</h3>
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+
+{isGradesOpen && (
+       <div
+       id="gradeDropdown"
+       className="absolute top-0 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full overflow-y-auto"  style={{maxHeight: '350px'}}
+     >
+       {/* Heading */}
+       <div className="px-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-indigo-500 to-indigo-700 dark:from-indigo-700 dark:to-indigo-900 rounded-t-xl shadow-md">
+         Select Grade
+       </div>
+     
+       <ul className="py-2 text-sm text-gray-800 dark:text-gray-200 p-2">
+        {[
+          "Kindergarten",
+          "Grade 1",
+          "Grade 2",
+          "Grade 3",
+          "Grade 4",
+          "Grade 5",
+          "Grade 6",
+          "Grade 7",
+          "Grade 8",
+          "Grade 9",
+          "Grade 10",
+        ].map((grade, index, array) => (
+          <li key={grade}>
+            <button
+              type="button"
+              onClick={(e) => handleGradeSelect(grade, e)}
+               className="flex items-center justify-between w-full px-4 py-3 transition-all duration-300 ease-in-out rounded-md hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white hover:shadow-md"
+            >
+              {grade}
+            </button>
+    
+            {/* Underline separator (except for last item) */}
+            {index !== array.length - 1 && (
+              <div className="border-b border-gray-200 dark:border-gray-600 mx-4 my-1"></div>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+    )}
+
+
+
+    {/* Subjects Dropdown */}
+    {isSubjectsOpen && (
+      <div
+      id="subjectDropdown"
+      className="absolute top-0 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full overflow-y-auto"  style={{maxHeight: '350px'}}
+    >
+      {/* Heading */}
+      <div className="px-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-indigo-500 to-indigo-700 dark:from-indigo-700 dark:to-indigo-900 rounded-t-xl shadow-md">
+        Select Subject
+      </div>
+    
+      <ul className="py-2 text-sm text-gray-800 dark:text-gray-200 p-2">
+          {["Reading and Literacy", "GMRC", "Makabayan", "English", "Filipino", "Science", "Math"].map((subject, index, array) => (
+            <li key={subject}>
+              <button
+                type="button"
+                onClick={(e) => handleSubjectSelect(subject, e)}
+                className="flex items-center justify-between w-full px-4 py-3 transition-all duration-300 ease-in-out rounded-md hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white hover:shadow-md"
+              >
+                {subject}
+              </button>
+              {/* Underline separator (except for last item) */}
+              {index !== array.length - 1 && (
+                <div className="border-b border-gray-200 dark:border-gray-600 mx-4 my-1"></div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    {/* Quarters Dropdown */}
+    {isQuartersOpen && (
+      <div
+      id="quarterDropdown"
+      className="absolute top-0 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full"
+    >
+      {/* Heading */}
+      <div className="px-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-indigo-500 to-indigo-700 dark:from-indigo-700 dark:to-indigo-900 rounded-t-xl shadow-md">
+        Select Quarter
+      </div>
+    
+      <ul className="py-2 text-sm text-gray-800 dark:text-gray-200 p-2">
+          {["1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"].map((quarter, index, array) => (
+            <li key={quarter}>
+              <button
+                type="button"
+                onClick={(e) => handleQuarterSelect(quarter, e)}
+                 className="flex items-center justify-between w-full px-4 py-3 transition-all duration-300 ease-in-out rounded-md hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white hover:shadow-md"
+              >
+                {quarter}
+              </button>
+               {/* Underline separator (except for last item) */}
+              {index !== array.length - 1 && (
+                <div className="border-b border-gray-200 dark:border-gray-600 mx-4 my-1"></div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    {/* Weeks Dropdown */}
+    {isWeek && (
+     <div
+     id="weekDropdown"
+     className="absolute top-0 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full overflow-y-auto" style={{maxHeight: '350px'}}
+   >
+     {/* Heading */}
+     <div className="px-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-indigo-500 to-indigo-700 dark:from-indigo-700 dark:to-indigo-900 rounded-t-xl shadow-md">
+       Select Week
+     </div>
+   
+     <ul className="py-2 text-sm text-gray-800 dark:text-gray-200 p-2">
+          {["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12"].map((week, index, array) => (
+            <li key={week}>
+              <button
+                type="button"
+                onClick={(e) => handleWeekSelect(week, e)}
+                className="flex items-center justify-between w-full px-4 py-3 transition-all duration-300 ease-in-out rounded-md hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white hover:shadow-md"
+              >
+                {week}
+              </button>
+               {/* Underline separator (except for last item) */}
+               {index !== array.length - 1 && (
+                <div className="border-b border-gray-200 dark:border-gray-600 mx-4 my-1"></div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </div>
+ </div>
+  )}
+</div>
+{/* Summary of uploads */}
+{isSummary && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-10">
+      <div  className="relative bg-white rounded-lg shadow-lg p-5 w-96 sm:w-5/6 max-w-md">
+      {/* Close Button */}
+      <button type="button" className="absolute top-0 p-2 right-2 text-gray-600 hover:text-gray-900 focus:outline-none" onClick={''}>
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+
+      <h3 className="text-lg p-2 font-semibold text-gray-700 text-center">📌Upload Summary</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-4">
       <div className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-md text-center">
-        <p className="text-gray-600 text-sm">Selected Grade</p>
-        <p className="text-lg font-medium text-blue-600">{selectedGrade || "None"}</p>
+          <p className="text-gray-600 text-sm">Selected School</p>
+          <p className="text-lg font-medium text-blue-600">{selectedSchool || "None"}</p>
+        </div>
+        <div className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-md text-center">
+          <p className="text-gray-600 text-sm">Selected Grade</p>
+          <p className="text-lg font-medium text-blue-600">{selectedGrade || "None"}</p>
+        </div>
+        <div className="p-3 bg-green-50 border-l-4 border-green-500 rounded-md text-center">
+          <p className="text-gray-600 text-sm">Selected Subject</p>
+          <p className="text-lg font-medium text-green-600">{selectedSubject || "None"}</p>
+        </div>
+        <div className="p-3 bg-yellow-50 border-l-4 border-yellow-500 rounded-md text-center">
+          <p className="text-gray-600 text-sm">Selected Quarter</p>
+          <p className="text-lg font-medium text-yellow-600">{selectedQuarter || "None"}</p>
+        </div>
+        <div className="p-3 bg-violet-50 border-l-4 border-violet-500 rounded-md text-center">
+          <p className="text-gray-600 text-sm">Selected Week</p>
+          <p className="text-lg font-medium text-violet-600">{selectedWeek || "None"}</p>
+        </div>
       </div>
-      <div className="p-3 bg-green-50 border-l-4 border-green-500 rounded-md text-center">
-        <p className="text-gray-600 text-sm">Selected Subject</p>
-        <p className="text-lg font-medium text-green-600">{selectedSubject || "None"}</p>
+      <div className="relative top-4 flex justify-center">
+      <button type="button" className="w-1/2  text-white bg-[#2557D6] hover:bg-[#2557D6]/90 focus:ring-4 focus:ring-[#2557D6]/50 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5  dark:focus:ring-[#2557D6]/50 me-2 mb-2">Continue</button>
       </div>
-      <div className="p-3 bg-yellow-50 border-l-4 border-yellow-500 rounded-md text-center">
-        <p className="text-gray-600 text-sm">Selected Quarter</p>
-        <p className="text-lg font-medium text-yellow-600">{selectedQuarter || "None"}</p>
+    </div>
+    </div>
+      )}
+               {/* Input Element */}
+  <div  className="col-span-2 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 cursor-pointer hover:bg-gray-100 p-2">
+      <label
+        htmlFor="fileInput"
+        className="flex flex-col items-center cursor-pointer"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-8 w-8 text-gray-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M3 16l4-4m0 0l4-4m-4 4h12M13 5h5a2 2 0 012 2v10a2 2 0 01-2 2h-5m-7-7l-4 4m0 0l4 4m-4-4h12"
+          />
+        </svg>
+        <p className="text-gray-600 font-medium mt-2 text-sm">Drag & drop your file here</p>
+        <p className="text-gray-400 text-xs">or click to browse</p>
+      </label>
+      <input
+        id="fileInput"
+        type="file"
+        name="file"
+        accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
+      <div className="relative inset-0 -top-10 flex justify-center items-center">
+         {renderFilePreview()}
       </div>
-      <div className="p-3 bg-violet-50 border-l-4 border-violet-500 rounded-md text-center">
-        <p className="text-gray-600 text-sm">Selected Week</p>
-        <p className="text-lg font-medium text-violet-600">{selectedWeek || "None"}</p>
-      </div>
+    </div>
+
+        {/* Form Buttons */}
+        <div className="col-span-2 flex justify-end space-x-4">
+        <button
+            type="button"
+            onClick={() => handleReset()}
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+          >
+            Reset
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setFormOpen(false);
+              handleReset();
+            }}
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            Submit
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 )}
 
-              
-               {/* Input Element */}
-            <div  className="col-span-2 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 cursor-pointer hover:bg-gray-100 p-2">
-              <label
-                htmlFor="fileInput"
-                className="flex flex-col items-center cursor-pointer"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-8 w-8 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 16l4-4m0 0l4-4m-4 4h12M13 5h5a2 2 0 012 2v10a2 2 0 01-2 2h-5m-7-7l-4 4m0 0l4 4m-4-4h12"
-                  />
-                </svg>
-                <p className="text-gray-600 font-medium mt-2 text-sm">Drag & drop your file here</p>
-                <p className="text-gray-400 text-xs">or click to browse</p>
-              </label>
-              <input
-                id="fileInput"
-                type="file"
-                name="file"
-                accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </div>
-
-                {/* Form Buttons */}
-                <div className="col-span-2 flex justify-end space-x-4">
-                <button
-                    type="button"
-                    onClick={() => handleReset()}
-                   className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
-                  >
-                    Reset
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFormOpen(false);
-                      handleReset();
-                      setSelectedOpen(false);
-                    }}
-                   className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                  >
-                    Submit
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
           <section id="teachers" className="mt-8 bg-white shadow-lg rounded-xl p-6">
             <h2 className="text-xl font-semibold text-gray-700 mb-4">List of Teachers</h2>
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse rounded-xl overflow-hidden">
+              <table className="w-full border-collapse rounded-xl overflow-y-auto" style={{maxHeight: '400px'}}>
                 <thead>
                   <tr className="bg-indigo-600 text-white">
                   <th className="px-6 py-3 text-left font-medium">Role</th>
@@ -519,7 +676,7 @@ useEffect(()=>{
                      <td className="px-6 py-4 border-b">{item.fullname}</td>
                      <td className="px-6 py-4 border-b">{item.school}</td>
                      <td className="px-6 py-4 border-b">{item.email}</td>
-                     <td className="px-6 py-4 border-b text-red-500 font-semibold">Inactive</td>
+                     <td className="px-6 py-4 border-b text-green-500 font-semibold">Active</td>
                      <td className="px-6 py-4 border-b">
                        <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition">
                          View
