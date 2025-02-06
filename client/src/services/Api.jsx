@@ -1,7 +1,8 @@
 import axios from 'axios';
+const VITE_API_BASE_URL = import.meta.VITE_API_BASE_URL;
 
 // Teacher Registration
-const userItemsAPI = 'http://localhost:5000/api/register';
+const userItemsAPI = `${VITE_API_BASE_URL}/api/register`; 
 export const createUser = async (userData) => {
 
     try {
@@ -14,7 +15,7 @@ export const createUser = async (userData) => {
 };
 
 // Users Login
-const API_Login = "http://localhost:5000/api/user";
+const API_Login = `${VITE_API_BASE_URL}/api/user`;
 export const adminLogin = async (userItem)=> {
     try {
         const response = await axios.post(API_Login, userItem);
@@ -27,7 +28,7 @@ export const adminLogin = async (userItem)=> {
 
 
 // Get Profile Users Principals and Teachers
-const API_Admin = 'http://localhost:5000/api/user-profile';
+const API_Admin = `${VITE_API_BASE_URL}/api/user-profile`;
 
 export const getUserAdmin = async (authToken) => {
   try {
@@ -43,7 +44,7 @@ export const getUserAdmin = async (authToken) => {
 
 
 // Associte Teacher Data
-const API_Associte = 'http://localhost:5000/api/associate';
+const API_Associte = `${VITE_API_BASE_URL}/api/associate`;
 
 export const createAssociate = async (userData)=>{
   try{
@@ -55,7 +56,7 @@ export const createAssociate = async (userData)=>{
   }
 }
 
-const API_SpecificTeachers = "http://localhost:5000/api/specificteachers";
+const API_SpecificTeachers = `${VITE_API_BASE_URL}/api/specificteachers`;
 
 export const getAllSpecificTeachers = async (id)=> {
   try {
@@ -69,7 +70,7 @@ export const getAllSpecificTeachers = async (id)=> {
 
 
 // Get All uploaded files
-const API_Files = 'http://localhost:5000/api/file';
+const API_Files = `${VITE_API_BASE_URL}/api/file`;
 
 export const getAllFiles = async ()=> {
     try {
@@ -82,7 +83,7 @@ export const getAllFiles = async ()=> {
 }
 
 // Api for approval
-const API_Approval = "http://localhost:5000/api/approve";
+const API_Approval = `${VITE_API_BASE_URL}/api/approve`;
 
 export const userApproval = async (id) => {
   try {
@@ -95,7 +96,7 @@ export const userApproval = async (id) => {
 };
 
 // API for Reject application teacher
-const API_Reject = "http://localhost:5000/api/reject";
+const API_Reject = `${VITE_API_BASE_URL}/api/reject`;
 export const rejectItem = async (id)=> {
    try {
     const response = await axios.delete(`${API_Reject}/${id}`);
@@ -109,7 +110,7 @@ export const rejectItem = async (id)=> {
 
 
 // API for get all pending teachers
-const API_userPendingList = 'http://localhost:5000/api/pending-teachers';
+const API_userPendingList = `${VITE_API_BASE_URL}/api/pending-teachers`;
 
 export const getUserPending = async (principalUserId)=>{
   try {

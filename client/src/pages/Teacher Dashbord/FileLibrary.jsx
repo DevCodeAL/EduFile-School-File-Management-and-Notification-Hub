@@ -1,3 +1,4 @@
+const VITE_API_BASE_URL = import.meta.VITE_API_BASE_URL;
 import { useEffect, useState } from "react";
 import { FaFolder, FaFilePdf, FaFileWord, FaFileExcel, FaArrowLeft, FaFilePowerpoint } from "react-icons/fa";
 import { getAllFiles } from "../../services/Api";
@@ -66,7 +67,7 @@ export default function UploadedFiles() {
     return <p className="text-gray-500">Invalid File</p>;
   }
 
-  const fileUrl = file.metadata?.path ? `http://localhost:5000/${file.metadata.path}` : null;
+  const fileUrl = file.metadata?.path ? `${VITE_API_BASE_URL}/${file.metadata.path}` : null;
   const fileType = file?.mimetype;
   const fileName = file?.filename || "Unknown File";
 
@@ -91,7 +92,7 @@ export default function UploadedFiles() {
 
 const handleOpenViewer = (file) => {
   if (file.metadata?.path) {
-    const fileUrl = `http://localhost:5000/${file.metadata.path}`;
+    const fileUrl = `${VITE_API_BASE_URL}/${file.metadata.path}`;
     setFileUrl(fileUrl);
     setWebOpen(true);
   } else {

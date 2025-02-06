@@ -1,3 +1,4 @@
+const VITE_API_BASE_URL = import.meta.VITE_API_BASE_URL;
 import React, { useState, useEffect } from "react";
 import { FaFilePdf, FaFileWord, FaFileExcel, FaFilePowerpoint } from "react-icons/fa";
 import Header from "../../components/Header";
@@ -33,8 +34,6 @@ const PrincipalDashboard = () => {
   const [isLoading, setLoading] = useState(false);
   const [isOpen, setOpen] = useState(false);
   const [isFormOpen, setFormOpen] = useState(false); 
-  // if true disabled button
-  // const [isSetValue, setIsValue] = useState(true);
 
   const [formData, setFormData] = useState({ 
     description: "", 
@@ -225,7 +224,7 @@ const handleSchoolSelect = (school, e)=>{
     data.append('week', formData.week);
 
     try {
-      const response = await fetch("http://localhost:5000/api/stats", {
+      const response = await fetch(`${VITE_API_BASE_URL}/api/stats`, {
         method: "POST",
         body: data,
       });

@@ -1,3 +1,4 @@
+const VITE_API_BASE_URL = import.meta.VITE_API_BASE_URL;
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import Header from "../../components/Header";
@@ -8,7 +9,7 @@ export default function TeacherDashboard() {
   const [isOpen, setOpen] = useState(false);
 
   useEffect(() => {
-    const socket = io('http://localhost:5000'); // Backend URL
+    const socket = io(VITE_API_BASE_URL); // Backend URL
     socket.on("newFileUploaded", (data) => {
       setNotifications((prev) => [...prev, { id: Date.now(), message: data.message }]);
     });
