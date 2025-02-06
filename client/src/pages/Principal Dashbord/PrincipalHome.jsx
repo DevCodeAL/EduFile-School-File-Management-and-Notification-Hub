@@ -7,6 +7,8 @@ import { getAllSpecificTeachers } from "../../services/Api";
 import { useAuth } from "../../context/AuthContext";
 import { getUserPending } from "../../services/Api";
 import { getAllFiles } from "../../services/Api";
+import TeachersProfile from "./Modal/TeachersDetails";
+import PrincipalProfileModal from "./Modal/EditProfile";
 
 
 const PrincipalDashboard = () => {
@@ -20,8 +22,9 @@ const PrincipalDashboard = () => {
   const [isQuartersOpen, setQuartersOpen] = useState(false);
   const [isWeek, setWeek] = useState(false);
   const [isSummary, setisSummary] = useState(false);
+  const [openProfile, setOpenProfile] = useState(false);
 
-  const [selectedSchool, setSelectedSchool] = useState("")
+  const [selectedSchool, setSelectedSchool] = useState("");
   const [selectedGrade, setSelectedGrade] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedQuarter, setSelectedQuarter] = useState("");
@@ -30,6 +33,9 @@ const PrincipalDashboard = () => {
   const [isLoading, setLoading] = useState(false);
   const [isOpen, setOpen] = useState(false);
   const [isFormOpen, setFormOpen] = useState(false); 
+  // if true disabled button
+  // const [isSetValue, setIsValue] = useState(true);
+
   const [formData, setFormData] = useState({ 
     description: "", 
     file: null,
@@ -84,8 +90,38 @@ const handleSchoolSelect = (school, e)=>{
     setQuartersOpen(false);
     setWeek(false);
     setTypeSchool(false);
-   setisSummary(true);
   }
+
+  // Seleted Option 
+  const handleSeletedOption = ()=>{
+      setisSummary(false);
+      handleReset();
+  };
+
+  
+  // Hande Reset Form
+  const handleReset = ()=>{
+    setFormData({ 
+     description: "", 
+     file: null,
+     typeSchool: '',
+     grade: '',
+     subject: '',
+      quarter: '',
+      week: '',
+   });
+
+   setSelectedSchool('');
+   setSelectedGrade('');
+   setSelectedSubject('');
+   setSelectedQuarter('');
+   setSelectedWeek('');
+   }
+
+  //  handle continue
+  const handleContinueEvent = ()=>{
+      setisSummary(true);
+  };
 
   
   // Handle form input changes
@@ -100,7 +136,7 @@ const handleSchoolSelect = (school, e)=>{
     setFormData((prev) => ({ ...prev, file }));
   };
 
-  // Preview
+  // File Preview
   const renderFilePreview = () => {
     if (formData.file) {
       const file = formData.file;
@@ -109,79 +145,70 @@ const handleSchoolSelect = (school, e)=>{
       if (file.type.startsWith('image/')) {
         // For image files, display a preview
         return (
-          <>
-          <img src={fileURL} alt="File preview" className="w-1/2 object-cover" />;
-          </>
+          <div className="flex justify-center items-center mt-1 p-3 border rounded-lg shadow-md bg-white">
+            <img src={fileURL} alt="Preview" className="max-w-full max-h-20 rounded-md" />
+         </div>
         )
       } else if (file.type.startsWith('video/')) {
         // For video files, display a preview with controls
         return (
-           <>
-           <video src={fileURL} controls className="w-1/2">
+          <div className="flex justify-center items-center mt-1 p-3 border rounded-lg shadow-md bg-white">
+           <video src={fileURL} controls className="max-w-full max-h-20 ">
             Your browser does not support the video tag.
           </video>
-           </>
+           </div>
         );
       } else if (file.type === 'application/pdf') {
         // For PDF files, display the name and a preview option
         return (
-          <>
-          <FaFilePdf/>
-          <span className="bg-slate-100 p-2" >{file.name}</span>
-          </>
+          <div className="flex flex-col justify-center items-center mt-1 p-3 border rounded-lg shadow-md bg-white">
+           <div>
+            <FaFilePdf className="text-red-500 w-6 h-6"/>
+           </div>
+           <div>{file.name}</div>
+          </div>
         )
       } else if (file.type === 'application/msword' || 
          file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
         return (
-          <>
-           <FaFileWord/>
-           <span className="bg-slate-100 p-2" >{file.name}</span>
-          </>
+          <div className="flex flex-col justify-center items-center mt-1 p-3 border rounded-lg shadow-md bg-white">
+          <div>
+            <FaFileWord className="text-blue-500 w-6 h-6"/>
+          </div>
+           <div>{file.name}</div>
+          </div>
         )
       } else if (  file.type === 'application/vnd.ms-powerpoint' ||
          file.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
        return (
-        <>
-         <FaFilePowerpoint/>
-         <span className="bg-slate-100 p-2" >{file.name}</span>
-        </>
+        <div className="flex flex-col justify-center items-center mt-1 p-3 border rounded-lg shadow-md bg-white">
+        <div>
+            <FaFilePowerpoint className="text-red-500 w-6 h-6"/>
+        </div>
+         <div>{file.name}</div>
+        </div>
        )
        
       } else if( file.type === 'application/vnd.ms-excel' ||
          file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
         return(
-          <>
-           <FaFileExcel/>
-           <span className="bg-slate-100 p-2" >{file.name}</span>
-          </>
+          <div className="flex flex-col justify-center items-center mt-1 p-3 border rounded-lg shadow-md bg-white">
+           <FaFileExcel className="text-green-500 w-6 h-6"/>
+           <div>{file.name}</div>
+          </div>
         )
 
       } else {
-          return <p>Unsupported Files</p>
+        return (
+          <div className="flex flex-col justify-center items-center mt-1 p-3 border rounded-lg shadow-md bg-white">
+           <p>Unsupported Files</p>
+         </div>
+        )
       }
     }
     return null;
   };
   
-
-  // Hande Reset Form
-  const handleReset = ()=>{
-   setFormData({ 
-    description: "", 
-    file: null,
-    typeSchool: '',
-    grade: '',
-    subject: '',
-     quarter: '',
-     week: '',
-  });
-  
-  setSelectedSchool('');
-  setSelectedGrade('');
-  setSelectedSubject('');
-  setSelectedQuarter('');
-  setSelectedWeek('');
-  }
 
 // File submission
   const handleSubmit = async (e) => {
@@ -350,6 +377,7 @@ useEffect(()=>{
                     />
                   </svg>
                 </button>
+              {selectedSchool.lastIndexOf('l') < 0 ? (<span className="text-red-600 font-semibold text-xs" >Required</span>) : null}
               </div>
 
                 {/* Description */}
@@ -364,6 +392,7 @@ useEffect(()=>{
                     className="w-full border rounded-lg px-3 py-2 text-gray-700"
                     required
                   ></textarea>
+                  {!formData.description && (<span className="text-red-600 font-semibold text-xs" >Required</span>)}
                 </div>
             <div>
 
@@ -552,14 +581,14 @@ useEffect(()=>{
   <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-10">
       <div  className="relative bg-white rounded-lg shadow-lg p-5 w-96 sm:w-5/6 max-w-md">
       {/* Close Button */}
-      <button type="button" className="absolute top-0 p-2 right-2 text-gray-600 hover:text-gray-900 focus:outline-none" onClick={''}>
+      <button type="button" onClick={handleSeletedOption} className="absolute top-0 p-2 right-2 text-gray-600 hover:text-gray-900 focus:outline-none">
       <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"></path>
       </svg>
     </button>
 
-      <h3 className="text-lg p-2 font-semibold text-gray-700 text-center">📌Upload Summary</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-4">
+      <h3 className="text-lg p-2 font-semibold text-gray-700 text-center">📌 Summary of upload</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       <div className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-md text-center">
           <p className="text-gray-600 text-sm">Selected School</p>
           <p className="text-lg font-medium text-blue-600">{selectedSchool || "None"}</p>
@@ -580,15 +609,18 @@ useEffect(()=>{
           <p className="text-gray-600 text-sm">Selected Week</p>
           <p className="text-lg font-medium text-violet-600">{selectedWeek || "None"}</p>
         </div>
+        <div>
+          {renderFilePreview()}
+      </div>
       </div>
       <div className="relative top-4 flex justify-center">
-      <button type="button" className="w-1/2  text-white bg-[#2557D6] hover:bg-[#2557D6]/90 focus:ring-4 focus:ring-[#2557D6]/50 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5  dark:focus:ring-[#2557D6]/50 me-2 mb-2">Continue</button>
+      <button type="submit" className="w-1/2  text-white bg-[#2557D6] hover:bg-[#2557D6]/90 focus:ring-4 focus:ring-[#2557D6]/50 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5  dark:focus:ring-[#2557D6]/50 me-2 mb-2">Upload</button>
       </div>
     </div>
     </div>
       )}
-               {/* Input Element */}
-  <div  className="col-span-2 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 cursor-pointer hover:bg-gray-100 p-2">
+{/* Input Element */}
+  <div  className="relative col-span-2 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 cursor-pointer hover:bg-gray-100 p-2">
       <label
         htmlFor="fileInput"
         className="flex flex-col items-center cursor-pointer"
@@ -619,16 +651,18 @@ useEffect(()=>{
         className="hidden"
       />
 
-      <div className="relative inset-0 -top-10 flex justify-center items-center">
-         {renderFilePreview()}
+        <div>
+          {renderFilePreview()}
       </div>
     </div>
+
+    {!formData.file && (<span className="text-red-600 font-semibold text-xs" >Required</span>)}
 
         {/* Form Buttons */}
         <div className="col-span-2 flex justify-end space-x-4">
         <button
             type="button"
-            onClick={() => handleReset()}
+            onClick={handleReset}
             className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
           >
             Reset
@@ -644,10 +678,23 @@ useEffect(()=>{
             Cancel
           </button>
           <button
-            type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            type="button" onClick={handleContinueEvent}
+            className={`px-4 py-2 ${formData.description
+               || formData.file || formData.typeSchool || formData.grade
+                || formData.quarter || formData.subject || formData.week 
+               ? 
+            'bg-blue-600  hover:bg-blue-700'
+             : ' bg-gray-500'} text-white rounded-lg`}
+            disabled={!formData.description
+              || !formData.file || !formData.typeSchool || !formData.grade
+               || !formData.quarter || !formData.subject || !formData.week }
           >
-            Submit
+            {formData.description
+               || formData.file || formData.typeSchool || formData.grade
+                || formData.quarter || formData.subject || formData.week 
+               ? 
+            'Continue'
+             : 'Fill to continue'}
           </button>
         </div>
       </form>
@@ -678,7 +725,7 @@ useEffect(()=>{
                      <td className="px-6 py-4 border-b">{item.email}</td>
                      <td className="px-6 py-4 border-b text-green-500 font-semibold">Active</td>
                      <td className="px-6 py-4 border-b">
-                       <button className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition">
+                       <button onClick={()=> setOpenProfile(true)} className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition">
                          View
                        </button>
                      </td>
@@ -688,6 +735,8 @@ useEffect(()=>{
               </table>
             </div>
           </section>
+          <PrincipalProfileModal/>
+          <TeachersProfile isOpen={openProfile} onClose={()=> setOpenProfile(false)}/>
       </main>
     </div>
   );

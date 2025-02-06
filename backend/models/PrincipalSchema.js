@@ -2,11 +2,6 @@ import mongoose, { Schema } from "mongoose";
 
 // File Schema
 const FileSchema = new Schema({
-  description: {
-    type: String,
-    required: true,
-  },
-
   typeSchool:{
     type: String,
     required: true,
@@ -32,6 +27,11 @@ const FileSchema = new Schema({
   },
 
   files: [{
+    description: {
+      type: String,
+      required: true,
+    },  
+
     filename: {
       type: String,
       default: null,

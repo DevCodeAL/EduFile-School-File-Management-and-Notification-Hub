@@ -92,16 +92,25 @@ export default function UploadedFiles() {
 };
 
   
-
+// Web viewer modal
 const handleOpenViewer = (file) => {
-  if (file.metadata?.path) {
-    const fileUrl = `http://localhost:5000/${file.metadata.path}`;
-    setFileUrl(fileUrl);
-    setWebOpen(true);
-  } else {
+  const fileUrl = `http://localhost:5000/${file.metadata?.path}`;
+  const fileType = file?.mimetype;
+
+  if (!file.metadata?.path) {
     console.error("File URL not found.");
+    return;
   }
+
+  if (fileType.startsWith("video")) {
+    console.log("Video files cannot be opened in viewer.");
+    return; // Prevent modal from opening for videos
+  }
+
+  setFileUrl(fileUrl);
+  setWebOpen(true);
 };
+
 
 
   return (
@@ -172,18 +181,32 @@ const handleOpenViewer = (file) => {
               </div>
             ))}
 
-            {currentFolder?.files?.map((file, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-center p-4 border rounded-lg bg-gray-100 cursor-pointer hover:bg-gray-200"
-                onClick={() => handleOpenViewer(file)}
-              >
-                {getFileIcon(file)}
-                <p className="mt-2 text-center text-sm">
-                  {file?.filename || "Filename Missing"}
-                </p>
-              </div>
-            ))}
+        {currentFolder?.files?.toReversed().map((file, index) => (
+          <div
+            key={index}
+            className="flex flex-col items-center p-5 bg-white shadow-lg rounded-2xl border border-gray-200 
+                      hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer"
+            onClick={() => handleOpenViewer(file)}
+          >
+            <div className="text-4xl">{getFileIcon(file)}</div>
+
+            <ul className="mt-3 text-center text-gray-700 text-sm space-y-1">
+              <li className="font-semibold text-gray-900">{file?.filename || "Filename Missing"}</li>
+              <li className="text-xs italic text-gray-500">{file?.description || "Description Missing"}</li>
+              <li className="text-xs text-gray-500">
+                {new Date(file?.uploadDate).toLocaleString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                  hour12: true
+                })}
+              </li>
+            </ul>
+          </div>
+        ))}
 
         </div>
       </main>

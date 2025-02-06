@@ -412,6 +412,7 @@ router.post("/stats", upload.single("file"), async (req, res) => {
         }
   
         fileData = {
+        description,
           filename: originalname,
           fileType,
           mimetype,
@@ -422,7 +423,6 @@ router.post("/stats", upload.single("file"), async (req, res) => {
   
       // Create and save file document
       const newItem = new Files({
-        description,
         typeSchool,
        grade,
        subject,
