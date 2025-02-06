@@ -12,6 +12,7 @@
   "dependencies": {
     "@pdftron/webviewer": "^11.2.0",
     "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
     "flowbite": "^3.0.0",
     "flowbite-react": "^0.10.2",
     "jwt-decode": "^4.0.0",

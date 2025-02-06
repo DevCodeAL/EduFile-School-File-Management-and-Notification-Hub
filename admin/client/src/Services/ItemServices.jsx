@@ -1,4 +1,4 @@
-const VITE_API_BASE_URL = import.meta.VITE_API_BASE_URL;
+const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 import axios from 'axios';
 
 //Login API for Admin
