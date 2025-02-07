@@ -1,8 +1,8 @@
-const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import Header from "../../components/Header";
 import ProfileModal from "../../components/Profile";
+const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function TeacherDashboard() {
   const [notifications, setNotifications] = useState([]); 

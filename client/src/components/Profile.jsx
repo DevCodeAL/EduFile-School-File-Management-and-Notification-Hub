@@ -1,8 +1,14 @@
 import React from "react";
 import { useAuth } from "../context/AuthContext";
+import { useState } from "react";
+import UpdatePrincipalProfile from "../pages/Principal Dashbord/Modal/UpdatePrincipalProfile";
+const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const ProfileModal = ({setClose}) => {
+const [isUpdateProfile, setUpdateProfie] = useState(false);
 const { user } = useAuth();
+
+ const fileUrl = `${VITE_API_BASE_URL }/${encodeURI(user?.data.metadata.path.replace(/\\/g, "/"))}`;
 
 if(!user){
     return <h1>No user exist!</h1>
@@ -25,8 +31,8 @@ if(!user){
         {/* User Avatar */}
         <div className="w-24 h-24 mx-auto mb-4 overflow-hidden rounded-full border-4 border-blue-500 shadow-lg">
           <img
-            src={'/image/Leomar .jpg'}
-            alt="User Avatar"
+          src={fileUrl || '/png/avatar.png'} 
+          alt="Profile" 
             className="w-full h-full object-cover"
           />
         </div>
@@ -45,12 +51,20 @@ if(!user){
           Close
         </button>
         <button
+          onClick={()=> {
+            setUpdateProfie(true);
+          }}
           className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition"
         >
           Update Profile
         </button>
       </div>
     </div>
+
+     {/* Profile Updates */}
+     <UpdatePrincipalProfile isOpenProfile={isUpdateProfile} isCancel={()=> {
+      setUpdateProfie(false);
+     }}/>
   </div>
   
   );

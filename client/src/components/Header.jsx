@@ -1,9 +1,10 @@
 import { useAuth } from "../context/AuthContext";
-
+const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Header({setOpen}){
-    const { logout } = useAuth();
-    
+    const { user, logout } = useAuth();
+    const fileUrl = `${VITE_API_BASE_URL }/${encodeURI(user?.data.metadata.path.replace(/\\/g, "/"))}`;
+
         return(
             <>
            {/* Header */}
@@ -14,7 +15,7 @@ export default function Header({setOpen}){
               <div className="w-12 h-12 border-2 border-indigo-600 rounded-full overflow-hidden cursor-pointer">
                 <img
                   className="w-full h-full object-cover"
-                  src="/image/Leomar .jpg"
+                  src={fileUrl || '/png/avatar.png'}
                   alt="User Profile"
                 />
                 <div className="absolute right-0 text-sm text-gray-500">{new Date().toLocaleDateString()}</div>

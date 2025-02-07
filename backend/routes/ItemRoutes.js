@@ -9,6 +9,7 @@ import { io } from '../server.js';
 import { sendEmailToTeachers } from '../controllers/emailService.js';
 import { sendApprovalEmail } from '../controllers/sendEmailAproval.js';
 import { sendPrincipalsNotificationsEmail } from '../controllers/principalEmailServices.js';
+import uploadProfile from '../middleware/profileUpload.js';
 const router = express.Router();
 
 // Registration for Principal
@@ -59,6 +60,55 @@ router.post('/principal', async (req, res)=> {
                 res.status(500).json({message: 'No user registerd', error});
             }
 });
+
+// Principal Profile Update
+router.put('/principalprofile/:userId', uploadProfile.single('picture'), async(req, res)=>{
+    const { fullname, email, contact } = req.body;
+   const { userId } = req.params;
+    try {
+        
+         const { originalname, mimetype, size, path } = req.file;
+
+         const getFileType = (mimetype)=>{
+            if(mimetype.startsWith("image")) return "image";
+            if(mimetype === null) return "unknown";
+          };
+
+         const fileType = getFileType(mimetype);
+          if(fileType === "unknown"){
+             return res.status(401).json({message: "Unsupported File!"});
+          };
+
+          const findId = await PrincipalItems.findById(userId);
+          if(!findId){
+            return res.status(400).json({message: 'No userId exist'});
+          };
+
+          
+           // Update fields only if they are provided
+        if (fullname) findId.fullname = fullname;
+        if (email) findId.email = email;
+        if (contact) findId.contact = contact;
+
+        const fileData = {originalname, mimetype, size, metadata: { path }};
+
+        // Update file details if a file was uploaded
+        if (req.file) {
+            findId.originalname = fileData.originalname;
+            findId.mimetype = fileData.mimetype;
+            findId.size = fileData.size;
+            findId.metadata = fileData.metadata;
+        }
+
+          await findId.save();
+
+          res.status(200).json({Message: "Successfully Updated"});
+        
+        } catch (error) {
+            res.status(500).json({error: error.message});
+        }
+});
+
 
 // Route to associate teachers with their principal by school---------
 router.post('/associate', async (req, res) => {

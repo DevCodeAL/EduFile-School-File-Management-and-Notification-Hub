@@ -21,6 +21,7 @@ app.use(bodyParser.json());
 app.use(compression());
 app.use('/api', ItemRoutes);
 app.use("/files", express.static("files"));
+app.use('/profile', express.static('profile'));
 
 // Create HTTP server
 const server = http.createServer(app);
@@ -59,4 +60,4 @@ server.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
-export { io }; // Export io to use in other files (e.g., when handling file uploads)
+export { io }; // Export io to use in other files when handling file uploads)

@@ -1,4 +1,3 @@
-const VITE_API_BASE_URL = import.meta.VITE_API_BASE_URL;
 import React, { useState, useEffect } from "react";
 import { FaFilePdf, FaFileWord, FaFileExcel, FaFilePowerpoint } from "react-icons/fa";
 import Header from "../../components/Header";
@@ -9,7 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 import { getUserPending } from "../../services/Api";
 import { getAllFiles } from "../../services/Api";
 import TeachersProfile from "./Modal/TeachersDetails";
-import PrincipalProfileModal from "./Modal/EditProfile";
+const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 
 const PrincipalDashboard = () => {
@@ -24,6 +23,7 @@ const PrincipalDashboard = () => {
   const [isWeek, setWeek] = useState(false);
   const [isSummary, setisSummary] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
+
 
   const [selectedSchool, setSelectedSchool] = useState("");
   const [selectedGrade, setSelectedGrade] = useState("");
@@ -129,6 +129,7 @@ const handleSchoolSelect = (school, e)=>{
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Handle File Change
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -734,7 +735,7 @@ useEffect(()=>{
               </table>
             </div>
           </section>
-          <PrincipalProfileModal/>
+         {/* View Specific Profile Teachers */}
           <TeachersProfile isOpen={openProfile} onClose={()=> setOpenProfile(false)}/>
       </main>
     </div>

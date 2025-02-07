@@ -68,6 +68,7 @@ const TeacherSchema = new Schema({
   school: { type: String, required: true },
   fullname: { type: String, required: true },
   email: { type: String, required: true },
+  
   password: { type: String, required: true },
   status: { type: String, enum: ["pending", "approved"], default: "pending" }, // New field
 }, {
@@ -80,7 +81,35 @@ const PrincipalSchema = new Schema({
   school: { type: String, required: true },
   fullname: { type: String, required: true },
   email: { type: String, required: true },
+  contact: { type: String, required: true },
   password: { type: String, required: true },
+  
+  // Profile
+  filename: {
+    type: String,
+    default: null,
+  },
+  fileType: {
+    type: String,
+    default: null,
+    enum: ['image'],
+  },
+  mimetype: {
+    type: String,
+    default: null,
+  },
+  size: {
+    type: Number,
+    default: null,
+  },
+  uploadDate: {
+    type: Date,
+    default: Date.now,
+  },
+  metadata: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
   files: [{ type: Schema.Types.ObjectId, ref: 'File' }],
   teachers: [{ type: Schema.Types.ObjectId, ref: 'Teacher' }],
 }, {

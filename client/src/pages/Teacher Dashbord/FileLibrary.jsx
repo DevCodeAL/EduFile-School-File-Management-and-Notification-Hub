@@ -1,8 +1,8 @@
-const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 import { useEffect, useState } from "react";
 import { FaFolder, FaFilePdf, FaFileWord, FaFileExcel, FaArrowLeft, FaFilePowerpoint } from "react-icons/fa";
 import { getAllFiles } from "../../services/Api";
 import { WebViewerModal } from "../../components/WebViewer";
+const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function UploadedFiles() {
   const [fileData, setFileData] = useState([]);

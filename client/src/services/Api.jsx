@@ -42,6 +42,22 @@ export const getUserAdmin = async (authToken) => {
   }
 };
 
+// Update Principal Profile
+const UpdatePrincipalProfile = `${VITE_API_BASE_URL}/api/principalprofile`;
+export const updateProfileAPI = async (userId, formData)=>{
+   try {
+    const response = await axios.put(`${UpdatePrincipalProfile}/${userId}`, formData,{
+      headers: {
+        "Content-Type": "multipart/form-data", // Ensure correct content type
+      },
+    });
+    return response.data;
+   } catch (error) {
+      console.error("No profile updates", error);
+      throw error;
+   }
+};
+
 
 // Associte Teacher Data
 const API_Associte = `${VITE_API_BASE_URL}/api/associate`;
