@@ -35,10 +35,10 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  console.log("A teacher connected:", socket.id);
+  // console.log("A teacher connected:", socket.id);
 
   socket.on("disconnect", () => {
-    console.log("A teacher disconnected:", socket.id);
+    // console.log("A teacher disconnected:", socket.id);
   });
 });
 

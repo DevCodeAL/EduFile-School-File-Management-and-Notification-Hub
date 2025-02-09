@@ -3,7 +3,7 @@ import bycrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import AdminUser from '../models/adminSchema.js';
 import authMiddleware from '../middleware/authMiddleWare.js';
-import  { Files, PrincipalItems, Teacher } from '../models/PrincipalSchema.js';
+import  { Files, NewAnnouncement, NewSchedule, PrincipalItems, Teacher } from '../models/PrincipalSchema.js';
 import upload from '../middleware/uploadMiddleware.js';
 import { io } from '../server.js';
 import { sendEmailToTeachers } from '../controllers/emailService.js';
@@ -61,10 +61,11 @@ router.post('/principal', async (req, res)=> {
             }
 });
 
-// Principal Profile Update
-router.put('/principalprofile/:userId', uploadProfile.single('picture'), async(req, res)=>{
-    const { fullname, email, contact } = req.body;
+//  Profile Update
+router.put('/userprofile/:userId', uploadProfile.single('picture'), async(req, res)=>{
+    const { fullname, email, contact, role } = req.body;
    const { userId } = req.params;
+   console.log('Incoming parameter', req.params);
     try {
         
          const { originalname, mimetype, size, path } = req.file;
@@ -79,28 +80,43 @@ router.put('/principalprofile/:userId', uploadProfile.single('picture'), async(r
              return res.status(401).json({message: "Unsupported File!"});
           };
 
-          const findId = await PrincipalItems.findById(userId);
-          if(!findId){
+
+        //   Check the role for updating
+        let userItem;
+        switch(role){
+           case 'principal':
+            userItem = await PrincipalItems.findById(userId);
+           break;
+
+           case 'teacher': 
+            userItem = await Teacher.findById(userId);
+           break;
+
+           default:
+                console.log(`Sorry, we are out of ${role}.`);
+        }
+        
+          if(!userItem){
             return res.status(400).json({message: 'No userId exist'});
           };
 
           
            // Update fields only if they are provided
-        if (fullname) findId.fullname = fullname;
-        if (email) findId.email = email;
-        if (contact) findId.contact = contact;
+        if (fullname) userItem.fullname = fullname;
+        if (email) userItem.email = email;
+        if (contact) userItem.contact = contact;
 
         const fileData = {originalname, mimetype, size, metadata: { path }};
 
         // Update file details if a file was uploaded
         if (req.file) {
-            findId.originalname = fileData.originalname;
-            findId.mimetype = fileData.mimetype;
-            findId.size = fileData.size;
-            findId.metadata = fileData.metadata;
+            userItem.originalname = fileData.originalname;
+            userItem.mimetype = fileData.mimetype;
+            userItem.size = fileData.size;
+            userItem.metadata = fileData.metadata;
         }
 
-          await findId.save();
+          await userItem.save();
 
           res.status(200).json({Message: "Successfully Updated"});
         
@@ -253,7 +269,6 @@ router.get("/specificteachers/:id", async (req, res) => {
     const { id } = req.params;
     try {
 
-  
       // Fetch principal and populate teachers
       const principal = await PrincipalItems.findById(id).populate("teachers");
   
@@ -320,7 +335,6 @@ router.post('/admin', async (req, res) => {
 router.get('/profile', authMiddleware, async (req, res) => {
     try {
       const userId = req.userId; // Retrieve userId from decoded token (set in the middleware)
-      
       const userItem = await AdminUser.findById(userId);
       if (!userItem) {
         return res.status(404).json({ message: 'User not found' });
@@ -445,9 +459,6 @@ router.post('/user', async (req, res) => {
     // Upload files , Pdf, Docx, Doc Image, Videos
 router.post("/stats", upload.single("file"), async (req, res) => {
     const {  description, typeSchool, grade, subject, quarter, week } = req.body;
-    console.log('Incoming data', req.body);
-    console.log("File Data:", req.file);
-
     try {
 
     
@@ -526,6 +537,113 @@ router.get('/file', async (req, res) => {
     } catch (error) {
         console.error('Error fetching items from DB:', error);
         res.status(500).json({ message: "Error fetching files", error: error.message });
+    }
+});
+
+// Create Schedule
+router.post('/schedule/:userId', async (req, res)=>{
+    const { title, date, time, description } = req.body;
+    const { userId } = req.params;
+    try {
+
+        if(!title || !date || !time || !description){
+            return res.status(400).json({message: 'All required fields!'});
+        };
+
+        if(!userId){
+            return res.status(401).json({message: 'Required userId'});
+        };
+
+        const principal = await PrincipalItems.findById(userId);
+
+        if(!principal){
+            return res.status(402).json({message: 'No user found in principal!'});
+        };
+
+        const createNewSchedule  = new NewSchedule({
+            title,
+            date,
+            time,
+            description,
+    });
+
+         await createNewSchedule.save();
+
+        principal.schedule.push(createNewSchedule._id);
+        await principal.save();
+
+        res.status(201).json({ message: "Successfully created schedule", schedule: createNewSchedule });
+
+    } catch (error) {
+        res.status(500).json({message: 'Error creating schedule', error: error.message})
+        console.error('No schedule created', error);
+    }
+});
+
+// Get all teachers under a specific principal
+router.get("/specificSchedule/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+
+      // Fetch principal and populate teachers
+      const principal = await PrincipalItems.findById(id).populate("schedule");
+  
+      if (!principal) {
+        return res.status(404).json({ message: "Principal not found" });
+      };
+  
+      res.json(principal.schedule);
+    } catch (error) {
+      res.status(500).json({ error: "Internal Server Error", details: error.message });
+    }
+  });
+
+//  create announcement
+router.post('/announcement/:userId', async (req, res)=>{
+    const { title, date, time, message } = req.body;
+    const { userId } = req.params;
+    try {
+        if(!title || !date || !time || !message){
+            return res.status(400).json({message: 'Required all fields!'});
+        };
+
+        const principal = await PrincipalItems.findById(userId);
+        
+        if(!principal){
+            return res.status(403).json({message: 'No principal found'});
+        };
+        
+         const newAnnouncement = new NewAnnouncement({
+             title, date, time, message,
+         });
+         await newAnnouncement.save();
+
+         principal.announcement.push(newAnnouncement._id);
+         await principal.save();
+
+         res.status(200).json({message: 'Successfully created new announcemnet!', announcement: newAnnouncement})
+
+    } catch (error) {
+        console.error({message: 'Failed to create announcement!', error: error.message});
+        throw error;
+    }
+});
+
+
+router.get('/specificAnnouncement/:userid', async (req, res)=>{
+    const { userid } = req.params;
+    try {
+          // Fetch principal and populate teachers
+      const principal = await PrincipalItems.findById(userid).populate("announcement");
+  
+      if (!principal) {
+        return res.status(404).json({ message: "Principal not found" });
+      };
+  
+      res.json(principal.announcement);
+    } catch (error) {
+        console.error({message: 'Failed to fetch announcement!', error: error.message});
+        throw error;
     }
 });
   

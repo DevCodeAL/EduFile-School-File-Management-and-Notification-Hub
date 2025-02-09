@@ -68,9 +68,57 @@ const TeacherSchema = new Schema({
   school: { type: String, required: true },
   fullname: { type: String, required: true },
   email: { type: String, required: true },
-  
+  contact: { type: String, required: true },
   password: { type: String, required: true },
   status: { type: String, enum: ["pending", "approved"], default: "pending" }, // New field
+  // Profile
+  filename: {
+    type: String,
+    default: null,
+  },
+  fileType: {
+    type: String,
+    default: null,
+    enum: ['image'],
+  },
+  mimetype: {
+    type: String,
+    default: null,
+  },
+  size: {
+    type: Number,
+    default: null,
+  },
+  uploadDate: {
+    type: Date,
+    default: Date.now,
+  },
+  metadata: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
+  files: [{ type: Schema.Types.ObjectId, ref: 'File' }],
+  teachers: [{ type: Schema.Types.ObjectId, ref: 'Teacher' }],
+}, {
+  timestamps: true,
+});
+
+// Schedule
+const Schedule = new Schema({
+  title: {type: String, required: true},
+  date: {type: String, required: true},
+  time: {type: String, required: true},
+  description: { type: String, required: true }
+}, {
+  timestamps: true,
+});
+
+// Announcement
+const Announcement = new Schema({
+  title: {type: String, required: true},
+  date: {type: String, required: true},
+  time: {type: String, required: true},
+  message: { type: String, required: true }
 }, {
   timestamps: true,
 });
@@ -112,6 +160,8 @@ const PrincipalSchema = new Schema({
   },
   files: [{ type: Schema.Types.ObjectId, ref: 'File' }],
   teachers: [{ type: Schema.Types.ObjectId, ref: 'Teacher' }],
+  schedule: [{ type: Schema.Types.ObjectId, ref: 'Schedule' }],
+  announcement:  [{ type: Schema.Types.ObjectId, ref: 'Announcement' }],
 }, {
   timestamps: true,
 });
@@ -120,3 +170,5 @@ const PrincipalSchema = new Schema({
 export const Files = mongoose.model('File', FileSchema);
 export const Teacher = mongoose.model('Teacher', TeacherSchema);
 export const PrincipalItems = mongoose.model('Principal', PrincipalSchema);
+export const NewSchedule = mongoose.model('Schedule', Schedule);
+export const NewAnnouncement = mongoose.model('Announcement', Announcement);
