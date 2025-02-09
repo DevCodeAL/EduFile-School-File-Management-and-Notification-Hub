@@ -23,7 +23,8 @@ const PrincipalDashboard = () => {
   const [isWeek, setWeek] = useState(false);
   const [isSummary, setisSummary] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
-
+  // Modal Teachers View 
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const [selectedSchool, setSelectedSchool] = useState("");
   const [selectedGrade, setSelectedGrade] = useState("");
@@ -725,7 +726,11 @@ useEffect(()=>{
                      <td className="px-6 py-4 border-b">{item.email}</td>
                      <td className="px-6 py-4 border-b text-green-500 font-semibold">Active</td>
                      <td className="px-6 py-4 border-b">
-                       <button onClick={()=> setOpenProfile(true)} className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition">
+                       <button onClick={()=>{
+                        setOpenProfile(true);
+                        setSelectedUser(item);
+                       }}
+                        className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition">
                          View
                        </button>
                      </td>
@@ -736,7 +741,11 @@ useEffect(()=>{
             </div>
           </section>
          {/* View Specific Profile Teachers */}
-          <TeachersProfile isOpen={openProfile} onClose={()=> setOpenProfile(false)}/>
+          <TeachersProfile
+           isOpen={openProfile}
+            onClose={()=> setOpenProfile(false)}
+            item={selectedUser}
+            />
       </main>
     </div>
   );

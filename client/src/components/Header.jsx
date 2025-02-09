@@ -3,7 +3,10 @@ const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Header({setOpen}){
     const { user, logout } = useAuth();
-    const fileUrl = `${VITE_API_BASE_URL }/${encodeURI(user?.data.metadata.path.replace(/\\/g, "/"))}`;
+    const fileUrl = user?.data?.metadata?.path
+    ? `${VITE_API_BASE_URL}/${encodeURI(user.data.metadata.path.replace(/\\/g, "/"))}`
+    : "/png/avatar.png"; // Fallback to default avatar if path is missing
+  
 
         return(
             <>

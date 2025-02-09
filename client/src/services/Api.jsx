@@ -42,13 +42,13 @@ export const getUserAdmin = async (authToken) => {
   }
 };
 
-// Update Principal Profile
-const UpdatePrincipalProfile = `${VITE_API_BASE_URL}/api/principalprofile`;
+// Update userProfile
+const UpdatePrincipalProfile = `${VITE_API_BASE_URL}/api/userprofile`;
 export const updateProfileAPI = async (userId, formData)=>{
    try {
     const response = await axios.put(`${UpdatePrincipalProfile}/${userId}`, formData,{
       headers: {
-        "Content-Type": "multipart/form-data", // Ensure correct content type
+        "Content-Type": "multipart/form-data", 
       },
     });
     return response.data;
@@ -121,8 +121,7 @@ export const rejectItem = async (id)=> {
     console.error("No users exist to be deleted!", error);
     throw error;
    }
-}
-
+};
 
 
 // API for get all pending teachers
@@ -136,4 +135,52 @@ export const getUserPending = async (principalUserId)=>{
     console.error("No teachers users exist!", error);
     throw error;
   }
-}
+};
+
+// create Schedule
+const API_Schedule = `${VITE_API_BASE_URL}/api/schedule`;
+
+export const createSchedule = async (formData, userId)=>{
+  try {
+    const response = await axios.post(`${API_Schedule}/${userId}`, formData);
+    return response.data;
+  } catch (error) {
+    console.error("No schedule create!", error);
+    throw error;
+  }
+};
+
+const API_getSchedule = `${VITE_API_BASE_URL}/api/specificSchedule`;
+export const getAllSchedule = async (id)=>{
+  try {
+    const response = await axios.get(`${API_getSchedule}/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("No schedule exist!", error);
+    throw error;
+  }
+};
+
+// create new announcement
+const Api_Announcement = `${VITE_API_BASE_URL}/api/announcement`;
+export const newAnnouncement = async (formData, userId)=>{
+  try {
+    const response = await axios.post(`${Api_Announcement}/${userId}`, formData);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to create new announcement!', error);
+    throw error;
+  }
+};
+
+//Get all Specific Announcement
+const API_getAnnouncment = `${VITE_API_BASE_URL}/api/specificAnnouncement`;
+export const getAllAnnouncement = async (userid)=>{
+  try {
+    const response = await axios.get(`${API_getAnnouncment}/${userid}`);
+    return response.data;
+  } catch (error) {
+    console.error("No announcement exist!", error);
+    throw error;
+  }
+};

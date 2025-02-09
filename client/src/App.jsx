@@ -11,6 +11,8 @@ import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./context/ProtectedRoutes";
 import Files from "./pages/Principal Dashbord/Pages/Files";
 import FileLibrary from "./pages/Teacher Dashbord/FileLibrary";
+import Schedule from "./pages/Principal Dashbord/Pages/SchedulePage";
+import Announcements from "./pages/Principal Dashbord/Pages/Announcement";
 
 function App() {
   const { user } = useAuth();
@@ -44,6 +46,18 @@ function App() {
         </ProtectedRoute>
         }/>
 
+    <Route path="/schedule-principal" element={
+          <ProtectedRoute role="principal">
+              <Schedule/>
+          </ProtectedRoute>
+        }/>
+
+
+    <Route path="/announcement-principal" element={
+          <ProtectedRoute role="principal">
+              <Announcements/>
+          </ProtectedRoute>
+        }/>
 
       <Route
         path="/teachers"
@@ -71,7 +85,7 @@ function App() {
             </ProtectedRoute>
           } />
     </Routes>
-  </Router>  
+   </Router>  
   );
 }
 

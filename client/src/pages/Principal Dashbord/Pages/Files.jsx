@@ -9,7 +9,11 @@ export default function UploadedFiles() {
   const [currentFolder, setCurrentFolder] = useState(null);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
   const [webOpen, setWebOpen] = useState(false);
-  const [fileUrl, setFileUrl] = useState(""); // Added state to store file URL
+  const [isOpen, setIsOpen] = useState(false);
+  const [isOpenVideo, setIsOpenVideo] = useState(false);
+  const [fileUrl, setFileUrl] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null); // Store the clicked image URL
+  const [selectedVideo, setIsSelectedVideo] = useState(null);
 
   const transformToFolderStructure = (files) => {
     const structure = { name: "Learning Record Store (LRS)", subfolders: {} };
@@ -39,6 +43,7 @@ export default function UploadedFiles() {
     return [structure];
   };
   
+
   useEffect(() => {
     const fetchAllFiles = async () => {
       try {
@@ -82,17 +87,91 @@ export default function UploadedFiles() {
 
   if (fileType?.startsWith("video/") && fileUrl) {
     return (
-      <video controls className="w-full h-40 rounded">
-        <source src={fileUrl} type={fileType} />
-        Your browser does not support the video tag.
-      </video>
+      <div>
+         <div
+          onClick={() => { 
+            setIsOpenVideo(true)
+            setIsSelectedVideo(fileUrl);
+          }}
+         className="cursor-pointer w-full h-40 rounded overflow-hidden">
+          <video controls className="w-full h-40 rounded">
+            <source src={fileUrl} type={fileType} />
+            Your browser does not support the video tag.
+          </video>
+      </div>
+
+      {isOpenVideo && (
+          <div 
+          className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-50">
+            <div className="relative rounded-lg shadow-lg max-w-2xl">
+              {/* Close Button */}
+              <button
+                className="absolute z-10 top-2 right-2 p-2 bg-gray-200 rounded-full text-gray-700 hover:bg-red-500 hover:text-white transition-all duration-300 shadow-md"
+                onClick={() => setIsOpenVideo(false)}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+              {/* Full Video */}
+              <video controls className="w-full h-auto rounded-lg">
+                <source src={selectedVideo} type={fileType} />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        )}
+      </div>
     );
   }
 
-  return <p className="text-gray-500">Unsupported File Type</p>;
+    // Image files (✅ Fixed return statement)
+    if (fileType?.startsWith("image/") && fileUrl) {
+      return (
+        <div>
+        {/* Clickable Image */}
+        <div
+          className="cursor-pointer w-full h-40 rounded overflow-hidden"
+          onClick={() => { 
+            setIsOpen(true)
+            setSelectedImage(fileUrl);
+          }}
+        >
+          <img
+            src={fileUrl}
+            alt="Image"
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+          {/* Modal */}
+          {isOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-50">
+            <div className="relative rounded-lg shadow-lg max-w-2xl">
+              {/* Close Button */}
+              <button
+                className="absolute top-2 right-2 p-2 bg-gray-200 rounded-full text-gray-700 hover:bg-red-500 hover:text-white transition-all duration-300 shadow-md"
+                onClick={() => setIsOpen(false)}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+              {/* Full Image */}
+              <img
+                src={selectedImage}
+                alt="Full Size"
+                className="w-full h-auto rounded-lg"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+      )
+    }
+  
+    return <p className="text-gray-500">Unsupported File Type</p>;
 };
 
-  
+
 // Web viewer modal
 const handleOpenViewer = (file) => {
   const fileUrl = `${VITE_API_BASE_URL}/${file.metadata?.path}`;
@@ -108,11 +187,14 @@ const handleOpenViewer = (file) => {
     return; // Prevent modal from opening for videos
   }
 
+  if (fileType.startsWith("image")) {
+    console.log("Image files cannot be opened in viewer.");
+    return; // Prevent modal from opening for image
+  }
+
   setFileUrl(fileUrl);
   setWebOpen(true);
 };
-
-
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -182,32 +264,30 @@ const handleOpenViewer = (file) => {
               </div>
             ))}
 
-        {currentFolder?.files?.toReversed().map((file, index) => (
-          <div
-            key={index}
-            className="flex flex-col items-center p-5 bg-white shadow-lg rounded-2xl border border-gray-200 
-                      hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer"
-            onClick={() => handleOpenViewer(file)}
-          >
-            <div className="text-4xl">{getFileIcon(file)}</div>
+            {currentFolder?.files?.toReversed().map((file, index) => (
+              <div
+                key={index}
+                className="flex flex-col items-center p-4 border rounded-lg bg-white shadow-md hover:bg-gray-100 transition-all duration-300"
+                onClick={() => handleOpenViewer(file)}
+              >
+                {/* File Icon / Preview */}
+                {getFileIcon(file)}
 
-            <ul className="mt-3 text-center text-gray-700 text-sm space-y-1">
-              <li className="font-semibold text-gray-900">{file?.filename || "Filename Missing"}</li>
-              <li className="text-xs italic text-gray-500">{file?.description || "Description Missing"}</li>
-              <li className="text-xs text-gray-500">
-                {new Date(file?.uploadDate).toLocaleString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  second: '2-digit',
-                  hour12: true
-                })}
-              </li>
-            </ul>
-          </div>
-        ))}
+                {/* File Details */}
+                <div className="mt-2 text-center w-full px-3">
+                  <p className="text-sm font-semibold text-gray-800 truncate">
+                    {file?.filename || "Filename Missing"}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                    {file?.description || "No Description Available"}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    📅 {new Date(file?.uploadDate).toLocaleString() || "Unknown Time"}
+                  </p>
+                </div>
+              </div>
+            ))}
+
 
         </div>
       </main>
@@ -216,7 +296,7 @@ const handleOpenViewer = (file) => {
       {webOpen && fileUrl && (
           <WebViewerModal
             fileUrl={fileUrl}
-            FileName={fileUrl.split("/").pop()} // Extract filename from URL
+            FileName={fileUrl.split('/').pop()} // Extract filename from URL
             WebViewerOpen={webOpen}
             WebViewerClose={() => setWebOpen(false)}
           />

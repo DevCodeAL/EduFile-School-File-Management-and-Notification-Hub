@@ -1,17 +1,17 @@
-import { useState } from "react";
-import { updateProfileAPI } from "../../../services/Api";
-import { useAuth } from "../../../context/AuthContext";
-import UpdateLoading from "../../../Success/UpdateLoading";
-import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { updateProfileAPI } from "../services/Api";
+import { useAuth } from "../context/AuthContext";
+import UpdateLoading from "../Success/UpdateLoading";
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const UpdatePrincipalProfile = ({isOpenProfile, isCancel})=> {
+const UpdateProfile = ({isOpenProfile, isCancel})=> {
   const { user } = useAuth();
   const [isLoadingUpdate, setLoadingUpdate] = useState(false);
   const [isFormData, setFormData] = useState({ picture: null, preview: null, fullname: '', email: '', contact: ''});
- const navigate = useNavigate();
-  const fileUrl = `${VITE_API_BASE_URL }/${encodeURI(user?.data.metadata.path.replace(/\\/g, "/"))}`;
- 
+  const fileUrl = user?.data?.metadata?.path
+    ? `${VITE_API_BASE_URL}/${encodeURI(user.data.metadata.path.replace(/\\/g, "/"))}`
+    : "/png/avatar.png"; // Fallback to default avatar if path is missing
+  
   // Handle form change
   const handleChange = (event)=>{
     const { name, value } = event.target;
@@ -30,7 +30,7 @@ const UpdatePrincipalProfile = ({isOpenProfile, isCancel})=> {
         picture : file,
         preview: URL.createObjectURL(file),
     });
-  }
+  };
 
   // Handle form submit
   const HandleUpdateProfileUpdate = async(e)=>{
@@ -42,10 +42,9 @@ const UpdatePrincipalProfile = ({isOpenProfile, isCancel})=> {
     data.append("fullname", isFormData.fullname);
     data.append("email", isFormData.email);
     data.append("contact", isFormData.contact);
-
    const userId = user?.data._id;
-   console.log(userId);
-
+   const role = user?.data.role;
+   data.append("role", role); // Add role to FormData
     try {
        const response =  await updateProfileAPI(userId, data);
        console.log('Data: ', response);
@@ -109,4 +108,4 @@ return(
     )
 }
 
-export default UpdatePrincipalProfile;
+export default UpdateProfile;

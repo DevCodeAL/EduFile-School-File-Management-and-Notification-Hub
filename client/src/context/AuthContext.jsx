@@ -10,25 +10,27 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
-  const socket = io(VITE_API_BASE_URL);
-  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [socket, setSocket] = useState(null);
+
+  useEffect(() => {
+    const newSocket = io(VITE_API_BASE_URL);
+    setSocket(newSocket);
+
+    return () => newSocket.disconnect();
+  }, []);
 
 
-  useEffect(()=>{
-    function onConnect() {
-      setIsConnected(true);
-    }
+  const updateUser = (newUserData) => {
+    setUser((prevUser) => ({
+      ...prevUser,
+      data: {
+        ...prevUser.data,
+        ...newUserData,
+      },
+    }));
+  };
+  
 
-    function onDisconnect() {
-      setIsConnected(false);
-    }
-
-    return () => {
-      socket.off('connect', onConnect);
-      socket.off('disconnect', onDisconnect);
-    };
-
-  },[]);
 
   // Function to check token expiry
   const isTokenExpired = (token) => {
@@ -110,7 +112,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isConnected, login, user, token, logout, loading }}>
+    <AuthContext.Provider value={{ socket, updateUser, login, user, token, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
