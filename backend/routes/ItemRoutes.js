@@ -646,6 +646,91 @@ router.get('/specificAnnouncement/:userid', async (req, res)=>{
         throw error;
     }
 });
+
+// Update Schedule
+router.put('/scheduleUpdate/:id', async (req, res)=>{
+    const { id } = req.params;
+    try {
+        const updatedData = req.body;
+    
+        // Find and update the schedule
+        const updatedSchedule = await NewSchedule.findByIdAndUpdate(id, updatedData, {
+          new: true, // Return the updated document
+          runValidators: true, 
+        });
+    
+        if (!updatedSchedule) {
+          return res.status(404).json({ message: "Schedule not found" });
+        }
+    
+        res.status(200).json(updatedSchedule);
+
+      
+
+    } catch (error) {
+         console.error({message: 'Failed to update schedule!', error: error.message});
+        throw error;
+    }
+});
+
+router.delete('/scheduleDelete/:id', async (req, res)=>{
+    const { id } = req.params;
+    try{
+        const deleteData = req.body;
+        const deleteSchedule = await NewSchedule.findByIdAndDelete(id, deleteData);
+        if(!deleteSchedule){
+            return res.status(400).json({message: 'No deleted data!'});
+        };
+
+    }catch(error){
+        console.error({message: 'Failed to delete schedule!', error: error.message});
+        throw error;
+    }
+});
+
+
+
+// Update Announcement
+router.put('/announcementUpdate/:id', async (req, res)=>{
+    const { id } = req.params;
+    try {
+        const updatedData = req.body;
+    
+        // Find and update the schedule
+        const updatedAnnouncement = await NewAnnouncement.findByIdAndUpdate(id, updatedData, {
+          new: true, // Return the updated document
+          runValidators: true, 
+        });
+    
+        if (!updatedAnnouncement) {
+          return res.status(404).json({ message: "Schedule not found" });
+        }
+    
+        res.status(200).json(updatedAnnouncement);
+
+      
+
+    } catch (error) {
+         console.error({message: 'Failed to update schedule!', error: error.message});
+        throw error;
+    }
+});
+
+router.delete('/announcementDelete/:id', async (req, res)=>{
+    const { id } = req.params;
+    try{
+        const deleteData = req.body;
+        const deleteSchedule = await NewAnnouncement.findByIdAndDelete(id, deleteData);
+        if(!deleteSchedule){
+            return res.status(400).json({message: 'No deleted data!'});
+        };
+
+    }catch(error){
+        console.error({message: 'Failed to delete schedule!', error: error.message});
+        throw error;
+    }
+});
+
   
 
 export default router;

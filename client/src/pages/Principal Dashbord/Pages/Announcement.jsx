@@ -1,10 +1,19 @@
 import { useEffect, useState } from "react";
-import { getAllAnnouncement, newAnnouncement } from "../../../services/Api";
+import { deleteAnnouncement, getAllAnnouncement, newAnnouncement } from "../../../services/Api";
 import { useAuth } from "../../../context/AuthContext";
+import AnnouncementModal from "../Modal/AnnouncementModal";
+import AnnouncementsUpdateModal from "../Modal/AnnouncementUpdateModal";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import DeleteModalAnnouncement from "../Modal/DeleteModalAnnoncement";
 
 export default function Announcements() {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(false);
+  const [isAnnouncementModal, setIsAnnouncementModal] = useState(false);
+  const [isAnnounceDelete, setIsAnnounceDelete] = useState(false);
+  const [isDeleteSelect, setisDeleteSelect] = useState(null);
+  const [isSelectedAnnouncement, setIsSelectedAnnouncement] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -50,6 +59,33 @@ export default function Announcements() {
     }
    
   };
+
+// Update Announcement
+const HandleUpdateAnnouncement = (announcement)=>{
+      setIsSelectedAnnouncement(announcement);
+      setIsAnnouncementModal(true);
+};
+
+const HandleDeleteEvent = async (announcement)=>{
+  try {
+    await deleteAnnouncement(announcement._id);
+    setAnnouncements((preveAnnounce)=> preveAnnounce.filter((t) => t._id !== announcement._id));
+    setIsAnnounceDelete(false);
+  } catch (error) {
+    console.error('No deleted announcement!', error);
+    throw error;
+  }
+};
+
+// Update UI
+async function UpdateUI() {
+  // Fetch updated schedules using user ID
+  const id = user?.data._id;
+  const updatedSchedules = await getAllAnnouncement(id);
+  setAnnouncements(updatedSchedules);
+};
+
+
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -131,16 +167,80 @@ export default function Announcements() {
           {announcements.length === 0 ? (
             <p className="text-gray-500">No announcements yet.</p>
           ) : (
-            announcements.map((announcement) => (
-              <div key={announcement._id} className="bg-white p-4 shadow-md rounded-lg border border-gray-200 transform transition-all scale-95 hover:scale-100">
+            announcements.toReversed().map((announcement) => (
+              <div key={announcement._id} className="relative bg-white p-4 shadow-md rounded-lg border border-gray-200 transform transition-all scale-95 hover:scale-100">
+                 <div className="group">
+                 <span className="p-2 absolute inset-0 left-auto cursor-pointer text-gray-600 hover:text-gray-900">
+                    <BsThreeDotsVertical />
+                  </span>
+                   {/* Tooltip & Buttons (Visible on Hover) */}
+                  <div className="hidden group-hover:flex flex-col absolute right-0 top-6 bg-white shadow-lg border border-gray-200 rounded-lg w-28 p-2 z-10">
+                    <button 
+                      className="flex items-center gap-2 text-gray-700 hover:text-blue-600 p-2 w-full text-sm"
+                      onClick={() => {
+                        HandleUpdateAnnouncement(announcement);
+                        setIsAnnouncementModal(true);
+                      }}
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button 
+                      className="flex items-center gap-2 text-gray-700 hover:text-red-600 p-2 w-full text-sm"
+                      onClick={() => {
+                        setisDeleteSelect(announcement); 
+                        setIsAnnounceDelete(true);
+                      }}>
+                      🗑️ Delete
+                    </button>
+                  </div>
+                 </div>
                 <h3 className="text-lg font-semibold text-gray-800">{announcement.title}</h3>
                 <p className="text-gray-600">📅 {announcement.date} | ⏰ {announcement.time}</p>
                 <p className="text-gray-500 mt-2">
-                  {announcement.message.slice(0, 150).concat(' .....')}
+                  {announcement.message.length > 100 ?
+                   announcement.message.slice(0, 100).concat('.....') : announcement.message}
                   </p>
+                  <button
+                 onClick={() => setSelectedAnnouncement(announcement)}
+                className="mt-2 text-blue-500 hover:underline"
+              >
+                Read More
+              </button>
               </div>
             ))
           )}
+
+                {/* Show modal when an announcement is selected */}
+            {selectedAnnouncement && (
+              <AnnouncementModal
+                announcement={selectedAnnouncement}
+                onClose={() => setSelectedAnnouncement(null)}
+              />
+            )}
+          {/* Update Modal */}
+            {isAnnouncementModal && (
+              <AnnouncementsUpdateModal
+               isOpenAnnouncement={isAnnouncementModal}
+                isCloseAnnouncement={()=> setIsAnnouncementModal(false)}
+                announcement={isSelectedAnnouncement}
+                onUpdate={(updatedData)=>{
+                  setAnnouncements((prevData)=> prevData.map(s => s._id === updatedData._id ? updatedData : s))
+                }}
+                />
+            )}
+
+            {/* Delete Modal Alert */}
+            {isAnnounceDelete && (
+              <DeleteModalAnnouncement isOpen={isAnnounceDelete}
+               onClose={()=> setIsAnnounceDelete(false)}
+               announcement={isDeleteSelect}
+               onConfirm={()=> {
+                HandleDeleteEvent(isDeleteSelect);
+                setIsAnnounceDelete(false);
+                UpdateUI();
+               }}/>
+            )}
+            
         </div>
       </main>
     </div>

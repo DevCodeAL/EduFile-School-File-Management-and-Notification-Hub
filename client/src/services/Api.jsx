@@ -184,3 +184,51 @@ export const getAllAnnouncement = async (userid)=>{
     throw error;
   }
 };
+
+// Update Shedule
+const API_Update_Schedule = `${VITE_API_BASE_URL}/api/scheduleUpdate`;
+export const updateSchedule = async (id, updatedData) => {
+   try {
+    const response = await axios.put(`${API_Update_Schedule}/${id}`, updatedData);
+    return response.data;
+   } catch (error) {
+    console.error("No schedule update!", error);
+    throw error;
+   }
+};
+
+// Delete Schedule
+const API_Delete_Schedule = `${VITE_API_BASE_URL}/api/scheduleDelete`;
+export const deleteSchedule = async (id, deleteData) => {
+  try {
+   const response = await axios.delete(`${API_Delete_Schedule}/${id}`, deleteData);
+   return response.data;
+  } catch (error) {
+   console.error("No schedule update!", error);
+   throw error;
+  }
+};
+
+// Update Announcement
+const API_Update_Announcement = `${VITE_API_BASE_URL}/api/announcementUpdate`;
+export const updateAnnouncement = async (id, updatedData) => {
+   try {
+    const response = await axios.put(`${API_Update_Announcement}/${id}`, updatedData);
+    return response.data;
+   } catch (error) {
+    console.error("No schedule update!", error);
+    throw error;
+   }
+};
+
+// Delete Schedule
+const API_Delete_Announcement = `${VITE_API_BASE_URL}/api/announcementDelete`;
+export const deleteAnnouncement = async (id, deleteData) => {
+  try {
+   const response = await axios.delete(`${API_Delete_Announcement}/${id}`, deleteData);
+   return response.data;
+  } catch (error) {
+   console.error("No schedule update!", error);
+   throw error;
+  }
+};

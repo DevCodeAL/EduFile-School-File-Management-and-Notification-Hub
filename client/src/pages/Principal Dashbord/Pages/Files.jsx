@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { FaFolder, FaFilePdf, FaFileWord, FaFileExcel, FaArrowLeft, FaFilePowerpoint } from "react-icons/fa";
+import { FaFolder, FaFilePdf, FaFileWord, FaFileExcel, FaArrowLeft, FaFilePowerpoint, } from "react-icons/fa";
+import { BsThreeDotsVertical } from "react-icons/bs";
 import { getAllFiles } from "../../../services/Api";
 import { WebViewerModal } from "../../../components/WebViewer";
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -264,12 +265,34 @@ const handleOpenViewer = (file) => {
               </div>
             ))}
 
-            {currentFolder?.files?.toReversed().map((file, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-center p-4 border rounded-lg bg-white shadow-md hover:bg-gray-100 transition-all duration-300"
-                onClick={() => handleOpenViewer(file)}
-              >
+      {currentFolder?.files?.toReversed().map((file, index) => (
+        <div
+          key={index}
+          className="flex flex-col items-center p-4 pt-7 border rounded-lg bg-white shadow-md hover:bg-gray-100 transition-all duration-300 relative"
+          onClick={() => handleOpenViewer(file)}
+        >
+        {/* Options for Update and Delete */}
+        <div className="group absolute -top-4 right-3">
+          <span className="p-2 cursor-pointer text-gray-600 hover:text-gray-900">
+            <BsThreeDotsVertical />
+          </span>
+
+          {/* Tooltip & Buttons (Visible on Hover) */}
+          <div className="hidden group-hover:flex flex-col absolute right-0 top-6 bg-white shadow-lg border border-gray-200 rounded-lg w-28 p-2 z-10">
+            <button 
+              className="flex items-center gap-2 text-gray-700 hover:text-blue-600 p-2 w-full text-sm"
+              onClick={null}
+            >
+              ✏️ Edit
+            </button>
+            <button 
+              className="flex items-center gap-2 text-gray-700 hover:text-red-600 p-2 w-full text-sm"
+              onClick={null}>
+              🗑️ Delete
+            </button>
+          </div>
+        </div>
+
                 {/* File Icon / Preview */}
                 {getFileIcon(file)}
 
@@ -287,8 +310,6 @@ const handleOpenViewer = (file) => {
                 </div>
               </div>
             ))}
-
-
         </div>
       </main>
 

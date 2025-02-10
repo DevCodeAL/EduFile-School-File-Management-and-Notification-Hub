@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react";
-import { createSchedule, getAllSchedule } from "../../../services/Api";
+import { createSchedule, deleteSchedule, getAllSchedule } from "../../../services/Api";
 import { FaPlus } from "react-icons/fa";
 import { useAuth } from '../../../context/AuthContext'
+import { BsThreeDotsVertical } from "react-icons/bs";
+import ScheduleModalUpdate from "../Modal/ScheduleUpdateModal";
+import DeleteModal from "../Modal/DeleteAlertSchedule";
 
 export default function Schedule() {
   const { user } = useAuth();
   const [isSchedule, setIsSchedule] = useState(false);
+  const [isUpdate, setIsUpdate] = useState(false);
+  const [isDelete, setIsDelete] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [selectedDeleteSchedule, setIsDeletedSchedule] = useState(null);
   const [schedules, setSchedules] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -54,6 +61,37 @@ export default function Schedule() {
         console.error('Error no schedule created or no response!', error);
      }   
   };
+
+  // Handle Updates
+const handleEditEvent =  (schedule)=>{
+    setSelectedSchedule(schedule);
+    setIsUpdate(true);
+};
+
+// Handle Delete
+const handleDelete = async (schedule) => {
+  if (!schedule || !schedule._id) return;
+
+  try {
+    await deleteSchedule(schedule._id);
+    setSchedules((prevSchedules) =>
+      prevSchedules.filter((s) => s._id !== schedule._id)
+    );
+     
+    setIsDelete(false);
+  } catch (error) {
+    console.error("Error deleting schedule:", error);
+  }
+};
+
+async function UpdateUI() {
+  // Fetch updated schedules using user ID
+  const id = user?.data._id;
+  const updatedSchedules = await getAllSchedule(id);
+  setSchedules(updatedSchedules);
+};
+
+
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -135,16 +173,70 @@ export default function Schedule() {
         {schedules.length === 0 ? (
           <p className="text-gray-500">No schedules added yet.</p>
         ) : (
-          schedules.map((schedule) => (
-            <div key={schedule._id} className="bg-white p-4 shadow-md rounded-lg border border-gray-200 transform transition-all scale-95 hover:scale-100">
-              <h3 className="text-lg font-semibold text-gray-800">{schedule.title}</h3>
-              <p className="text-gray-600">
-                📅 {schedule.date} | ⏰ {schedule.time}
-              </p>
-              {schedule.description && <p className="text-gray-500 mt-2">{schedule.description}</p>}
+          schedules.toReversed().map((schedule) => (
+            <div key={schedule._id} className="relative bg-white p-4 shadow-md rounded-lg border border-gray-200 transform transition-all scale-95 hover:scale-100">
+          {/* Three Dots (Dropdown Trigger) */}
+          <div className="absolute top-2 right-2 group">
+            <span className="p-2 absolute inset-0 left-auto cursor-pointer text-gray-600 hover:text-gray-900">
+              <BsThreeDotsVertical />
+            </span>
+
+            {/* Tooltip & Buttons (Visible on Hover) */}
+            <div className="hidden group-hover:flex flex-col absolute right-0 top-6 bg-white shadow-lg border border-gray-200 rounded-lg w-28 p-2 z-10">
+              <button 
+                className="flex items-center gap-2 text-gray-700 hover:text-blue-600 p-2 w-full text-sm"
+                onClick={() => handleEditEvent(schedule)}
+              >
+                ✏️ Edit
+              </button>
+              <button 
+                className="flex items-center gap-2 text-gray-700 hover:text-red-600 p-2 w-full text-sm"
+                onClick={() => {
+                  setIsDeletedSchedule(schedule); 
+                  setIsDelete(true);
+                }}>
+                🗑️ Delete
+              </button>
             </div>
+          </div>
+
+          {/* Schedule Details */}
+          <h3 className="text-lg font-semibold text-gray-800">{schedule.title}</h3>
+          <p className="text-gray-600">
+            📅 {schedule.date} | ⏰ {schedule.time}
+          </p>
+          {schedule.description && <p className="text-gray-500 mt-2">{schedule.description}</p>}
+        </div>        
           ))
         )}
+
+        {/* Update Modal */}
+        {isUpdate && (
+          <ScheduleModalUpdate 
+          isUpdateOpen={isUpdate} 
+          isUpdateClose={() => setIsUpdate(false)}
+          schedule={selectedSchedule} // Pass selected schedule
+          onUpdate={(updatedData) => {
+            setSchedules(prevSchedules => prevSchedules.map(s => s._id === updatedData._id ? updatedData : s));
+          }}
+        />
+        
+        )}
+
+      {/* Update Modal */}
+        {isDelete && (
+          <DeleteModal
+           isOpen={isDelete}
+            onClose={()=> setIsDelete(false)}
+             schedule={selectedDeleteSchedule}
+             onConfirm={()=>{
+              handleDelete(selectedDeleteSchedule);
+              UpdateUI();
+              setIsDelete(false); // Close modal after deletion
+             }}
+             />
+        )}
+        
       </div>
       </main>
     </div>
