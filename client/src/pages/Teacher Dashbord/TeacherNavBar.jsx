@@ -37,15 +37,17 @@ export default function TeacherNavbar() {
             </li>
              
            <li>
-           <a href="#" className="block py-2 px-4 hover:bg-blue-700 rounded">
-            📅 Schedule
-          </a>
+           <Link to={"/teacher-schedule"} className={isActive('/teacher-schedule')}>
+           <span className="text-white text-sm font-medium">
+              📅 Schedule
+           </span>
+          </Link>
            </li>
         
           <li>
-            <a href="#" className="block py-2 px-4 hover:bg-blue-700 rounded">
+            <Link to={'/techers-announcement'} className={isActive('/techers-announcement')}>
               📢 Announcements
-            </a>
+            </Link>
           </li>
           </ul>
         </nav>

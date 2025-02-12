@@ -85,7 +85,7 @@ export default function TeacherDashboard() {
             {/* Schedule */}
             <div className="bg-white shadow-md p-4 rounded-lg">
               <h2 className="text-lg font-semibold text-gray-700">📅 Schedule</h2>
-              <p className="text-sm text-gray-600 mt-2">Upcoming classes appear here.</p>
+              <p className="text-sm text-gray-600 mt-2">Upcoming meetings appear here.</p>
             </div>
 
             {/* Announcements */}

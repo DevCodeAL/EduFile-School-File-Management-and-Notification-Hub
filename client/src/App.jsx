@@ -13,6 +13,8 @@ import Files from "./pages/Principal Dashbord/Pages/Files";
 import FileLibrary from "./pages/Teacher Dashbord/FileLibrary";
 import Schedule from "./pages/Principal Dashbord/Pages/SchedulePage";
 import Announcements from "./pages/Principal Dashbord/Pages/Announcement";
+import TeacherSchedule from "./pages/Teacher Dashbord/Modal/TeacherSchedule";
+import TeachersAnnouncement from "./pages/Teacher Dashbord/TeacherAnnouncement";
 
 function App() {
   const { user } = useAuth();
@@ -84,6 +86,19 @@ function App() {
                 <FileLibrary/>
             </ProtectedRoute>
           } />
+
+          <Route path="/teacher-schedule" element={
+            <ProtectedRoute role="teacher">
+              <TeacherSchedule/>
+            </ProtectedRoute>
+          }/>
+
+          <Route path="/techers-announcement" element={
+            <ProtectedRoute role="teacher">
+                <TeachersAnnouncement/>
+            </ProtectedRoute>
+          }
+          />
     </Routes>
    </Router>  
   );

@@ -150,6 +150,7 @@ export const createSchedule = async (formData, userId)=>{
   }
 };
 
+// Schedule for Principal Specific
 const API_getSchedule = `${VITE_API_BASE_URL}/api/specificSchedule`;
 export const getAllSchedule = async (id)=>{
   try {
@@ -157,6 +158,18 @@ export const getAllSchedule = async (id)=>{
     return response.data;
   } catch (error) {
     console.error("No schedule exist!", error);
+    throw error;
+  }
+};
+
+// Get All Specific Schedule for Teachers
+const API_Teacher_Schedule = `${VITE_API_BASE_URL}/api/schedulesByPrincipal`;
+export const getAllSpecificScheduleTeachers = async(id)=>{
+  try {
+    const response = await axios.get(`${API_Teacher_Schedule}/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("No schedule for teachers exist!", error);
     throw error;
   }
 };
@@ -183,6 +196,18 @@ export const getAllAnnouncement = async (userid)=>{
     console.error("No announcement exist!", error);
     throw error;
   }
+};
+
+// Get All Specific Announcement for Teachers
+const Api_Announcement_Teachers = `${VITE_API_BASE_URL}/api/announcementByPrincipal`;
+export const getAllAnnouncementByPrincipal = async (teacherID)=>{
+    try {
+      const response = await axios.get(`${Api_Announcement_Teachers}/${teacherID}`);
+      return response.data;
+    } catch (error) {
+      console.error('No Announcement exist or error fetching!', error);
+      throw error;
+    }
 };
 
 // Update Shedule
@@ -228,7 +253,20 @@ export const deleteAnnouncement = async (id, deleteData) => {
    const response = await axios.delete(`${API_Delete_Announcement}/${id}`, deleteData);
    return response.data;
   } catch (error) {
-   console.error("No schedule update!", error);
+   console.error("No schedule deleted!", error);
    throw error;
   }
 };
+
+
+// Api for file uploads update
+const API_FIleUpdates = `${VITE_API_BASE_URL}/api/statsUpdates`;
+export const updateFiles = async (id, updateData)=>{
+  try {
+    const response = axios.put(`${API_FIleUpdates}/${id}`, updateData);
+    return response.data;
+  } catch (error) {
+    console.error('No updated File', error);
+    throw error;
+  }
+}

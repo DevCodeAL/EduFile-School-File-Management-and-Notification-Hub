@@ -3,6 +3,7 @@ import { FaFolder, FaFilePdf, FaFileWord, FaFileExcel, FaArrowLeft, FaFilePowerp
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { getAllFiles } from "../../../services/Api";
 import { WebViewerModal } from "../../../components/WebViewer";
+import LearningMaterialsUpdate from "../Modal/FilesUploadUpdate";
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function UploadedFiles() {
@@ -15,6 +16,10 @@ export default function UploadedFiles() {
   const [fileUrl, setFileUrl] = useState("");
   const [selectedImage, setSelectedImage] = useState(null); // Store the clicked image URL
   const [selectedVideo, setIsSelectedVideo] = useState(null);
+  // For Update File
+  const [selectedFile, setIsSelectedFile] = useState(null);
+  const [isOpenFileUpdate, setIsOpenFileUpdate] = useState(false);
+
 
   const transformToFolderStructure = (files) => {
     const structure = { name: "Learning Record Store (LRS)", subfolders: {} };
@@ -197,6 +202,12 @@ const handleOpenViewer = (file) => {
   setWebOpen(true);
 };
 
+// Creat a function for Updates Files
+const HandleFileUpdate = (file)=> {
+    setIsSelectedFile(file);
+    setIsOpenFileUpdate(false);
+};
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <main className="flex-1 p-6 ml-64">
@@ -281,7 +292,10 @@ const handleOpenViewer = (file) => {
           <div className="hidden group-hover:flex flex-col absolute right-0 top-6 bg-white shadow-lg border border-gray-200 rounded-lg w-28 p-2 z-10">
             <button 
               className="flex items-center gap-2 text-gray-700 hover:text-blue-600 p-2 w-full text-sm"
-              onClick={null}
+              onClick={()=> {
+                HandleFileUpdate(file);
+                setIsOpenFileUpdate(true);
+              }}
             >
               ✏️ Edit
             </button>
@@ -320,6 +334,21 @@ const handleOpenViewer = (file) => {
             FileName={fileUrl.split('/').pop()} // Extract filename from URL
             WebViewerOpen={webOpen}
             WebViewerClose={() => setWebOpen(false)}
+          />
+        )}
+
+        {isOpenFileUpdate && (
+          <LearningMaterialsUpdate 
+          isOpenFileUpdates={isOpenFileUpdate} 
+          onCloseFileUpate={
+            ()=> setIsOpenFileUpdate(false)
+          }
+          file={selectedFile}
+          onUpdate={(updatedFile)=> 
+            setIsSelectedFile(previewFile => 
+              previewFile.map((t)=> t._id === updatedFile._id ? updatedFile: t ))}
+
+            
           />
         )}
     </div>

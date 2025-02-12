@@ -157,11 +157,12 @@ router.get('/all-principals', async (req, res) => {
 // Registration for Teacher
 router.post('/register', async (req, res)=>{
         const { role, school, fullname, email, password } = req.body;
+        console.log('Incoming data: ', req.body);
     try{
 
         if(!role || !school || !fullname || !email || !password){
             return res.status(200).json({message: 'All required fields!'});
-        }
+        };
 
         const hashPassword = await bycrypt.hash(password, 10);
 
@@ -460,8 +461,7 @@ router.post('/user', async (req, res) => {
 router.post("/stats", upload.single("file"), async (req, res) => {
     const {  description, typeSchool, grade, subject, quarter, week } = req.body;
     try {
-
-    
+        
       let fileData = null;
       if (req.file) {
         const { originalname, mimetype, size, path } = req.file;
@@ -526,7 +526,67 @@ function getFileType(mimetype) {
     if (mimetype === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
       return "xlsx"; // For .xlsx (modern Excel format)
     return "unknown";
-  }
+  };
+
+//   File Updates
+router.put('/statsUpdates/:id', upload.single("file"), async(req, res)=>{
+    const { id } = req.params;
+    const {  description, typeSchool, grade, subject, quarter, week } = req.body;
+    try {
+        const { updateData } = req.body;
+        let fileData = null;
+      if (req.file) {
+        const { originalname, mimetype, size, path } = req.file;
+  
+        // Determine file type
+        const fileType = getFileType(mimetype);
+        if (fileType === "unknown") {
+          return res.status(400).json({ message: "Unsupported file type" });
+        }
+  
+        fileData = {
+        description,
+          filename: originalname,
+          fileType,
+          mimetype,
+          size,
+          metadata: { path }, // Save path for internal reference
+        };
+      }; 
+
+      const newItems = await Files.findByIdAndUpdate(id, updateData);
+  
+    //   // Create and save file document
+    //   const newItem = new Files({
+    //     typeSchool,
+    //    grade,
+    //    subject,
+    //    quarter,
+    //    week,
+    //     files: fileData,
+    //   });
+  
+    //   await newItem.save();
+
+          // Get all teachers' emails
+        //   const teachers = await Teacher.find({ role: "teacher" }).select("email");
+        //   const teacherEmails = teachers.map((teacher) => teacher.email);
+      
+          // Send email notifications to all teachers
+        //   await sendEmailToTeachers(teacherEmails, newItem);
+      
+          // Emit real-time notification to all connected teachers
+        //   io.emit("newFileUploaded", { message: `New file uploaded: ${newItem.description}` });
+   
+      res.status(201).json({ message: "File uploaded and notifications sent!", newItems });
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error uploading file", error: error.message });
+    }
+});
+
+
   
 
   // Endpoint to list files with unique identifiers
@@ -598,6 +658,29 @@ router.get("/specificSchedule/:id", async (req, res) => {
     }
   });
 
+// Get schedules for a teacher based on their principal
+router.get("/schedulesByPrincipal/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Find the principal who manages this teacher
+    const principal = await PrincipalItems.findOne({ teachers: id }).populate("schedule");
+
+    if (!principal) {
+      return res.status(404).json({ message: "Principal not found for this teacher" });
+    }
+
+    if (!principal.schedule || principal.schedule.length === 0) {
+      return res.status(404).json({ message: "No schedules found for this teacher's principal" });
+    }
+
+    res.status(200).json(principal.schedule);
+  } catch (error) {
+    console.error("Error fetching schedules:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
+  }
+});
+
 //  create announcement
 router.post('/announcement/:userId', async (req, res)=>{
     const { title, date, time, message } = req.body;
@@ -629,7 +712,7 @@ router.post('/announcement/:userId', async (req, res)=>{
     }
 });
 
-
+// Get All Specific Announcment for principal
 router.get('/specificAnnouncement/:userid', async (req, res)=>{
     const { userid } = req.params;
     try {
@@ -643,6 +726,25 @@ router.get('/specificAnnouncement/:userid', async (req, res)=>{
       res.json(principal.announcement);
     } catch (error) {
         console.error({message: 'Failed to fetch announcement!', error: error.message});
+        throw error;
+    }
+});
+
+// Get All Specific Announcement for Teachers
+router.get('/announcementByPrincipal/:teachersID', async (req, res)=>{
+  const { teachersID } = req.params;
+    try{
+
+      const findByTeacherId = await PrincipalItems.findOne({teachers: teachersID}).populate('announcement');
+
+      if(!findByTeacherId){
+        return res.status(400).json({message: 'No teachers Id found exist!'});
+      };
+
+      res.status(200).json(findByTeacherId.announcement);
+
+    }catch(error){
+      console.error({message: 'Failed to fetch announcement!', error: error.message});
         throw error;
     }
 });
@@ -687,8 +789,6 @@ router.delete('/scheduleDelete/:id', async (req, res)=>{
         throw error;
     }
 });
-
-
 
 // Update Announcement
 router.put('/announcementUpdate/:id', async (req, res)=>{

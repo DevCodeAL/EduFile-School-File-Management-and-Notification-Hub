@@ -1,9 +1,12 @@
+import { useState, useEffect } from "react";
+import { useAuth } from '../../../context/AuthContext';
+import { updateFiles } from "../../../services/Api";
 
-export default function LearningMaterialsUpdate(){
-        const [isSpecificUser, setisSpecificUser] = useState([]);
+export default function LearningMaterialsUpdate({isOpenFileUpdates , onCloseFileUpate, file, onUpdate}){
+
+  if(!isOpenFileUpdates) return null;
+
         const { user } = useAuth();
-        const [pending, setPending] = useState([]);
-        const [files, setFiles] = useState([]);
         const [isTypeSchool, setTypeSchool] = useState(false);
         const [isGradesOpen, setGradesOpen] = useState(false);
         const [isSubjectsOpen, setSubjectsOpen] = useState(false);
@@ -18,7 +21,6 @@ export default function LearningMaterialsUpdate(){
         const [selectedWeek, setSelectedWeek] = useState("");
       
         const [isLoading, setLoading] = useState(false);
-        const [isOpen, setOpen] = useState(false);
         const [isFormOpen, setFormOpen] = useState(false); 
       
         const [formData, setFormData] = useState({ 
@@ -211,11 +213,8 @@ export default function LearningMaterialsUpdate(){
           data.append('week', formData.week);
       
           try {
-            const response = await fetch(`${VITE_API_BASE_URL}/api/stats`, {
-              method: "POST",
-              body: data,
-            });
-      
+            const response = await updateFiles(file._id, data);
+            onUpdate(response);
             setTimeout(()=>{
               setFormOpen(false);
               setLoading(false);
@@ -554,7 +553,7 @@ export default function LearningMaterialsUpdate(){
           <button
             type="button"
             onClick={() => {
-              setFormOpen(false);
+              onCloseFileUpate();
               handleReset();
             }}
             className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"

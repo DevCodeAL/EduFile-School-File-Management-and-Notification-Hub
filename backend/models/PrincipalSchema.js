@@ -68,7 +68,7 @@ const TeacherSchema = new Schema({
   school: { type: String, required: true },
   fullname: { type: String, required: true },
   email: { type: String, required: true },
-  contact: { type: String, required: true },
+  contact: { type: String, default: null},
   password: { type: String, required: true },
   status: { type: String, enum: ["pending", "approved"], default: "pending" }, // New field
   // Profile
@@ -129,7 +129,7 @@ const PrincipalSchema = new Schema({
   school: { type: String, required: true },
   fullname: { type: String, required: true },
   email: { type: String, required: true },
-  contact: { type: String, required: true },
+  contact: { type: String, default: null },
   password: { type: String, required: true },
   
   // Profile
