@@ -1,7 +1,8 @@
 import { FaEnvelope, FaSchool, FaUserTie } from "react-icons/fa";
-
+const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const TeachersProfile = ({ isOpen, onClose, item }) => {
   if (!isOpen) return null;
+
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-50">
@@ -17,7 +18,9 @@ const TeachersProfile = ({ isOpen, onClose, item }) => {
         {/* Profile Picture */}
         <div className="w-28 h-28 mx-auto mb-4 rounded-full overflow-hidden border-4 border-blue-500 shadow-lg">
           <img
-            src={item?.profilePic || "https://via.placeholder.com/150"}
+           src={
+            item?.metadata?.path ?
+            `${VITE_API_BASE_URL}/${encodeURI(item?.metadata?.path.replace(/\\/g, "/"))}` : './png/avatar.png'}
             alt="Profile"
             className="w-full h-full object-cover"
           />

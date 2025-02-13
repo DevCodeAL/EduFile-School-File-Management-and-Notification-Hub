@@ -272,22 +272,46 @@ router.get("/specificteachers/:id", async (req, res) => {
 
       // Fetch principal and populate teachers
       const principal = await PrincipalItems.findById(id).populate("teachers");
-  
+
       if (!principal) {
         return res.status(404).json({ message: "Principal not found" });
       }
+
+    const ApprovedTeachers = principal.teachers.filter(teacher => teacher.status === 'approved');
+      
   
-      res.json(principal.teachers);
+      res.json(ApprovedTeachers);
     } catch (error) {
       res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
   });
+
+  // Specific teachers for deletion
+  router.delete('/deleteSpecificTeachers/:teachersById', async (req, res)=>{
+    const { teachersById } = req.params;
+    
+    try {
+
+      const findByTeacher = await Teacher.findOneAndDelete(teachersById);
+
+      if(!findByTeacher){
+        return res.status(400).json({message: 'No teachers user id exist!'});
+      };
+
+      res.status(200).json({success: findByTeacher.teachers});
+      
+    } catch (error) {
+      console.error('Failed to delete teachers', error.message);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  })
   
 
 
 // Login for Administrator
 router.post('/admin', async (req, res) => {
     const { username, password } = req.body;
+    console.log(req.body);
 
     try {
         // Check for missing fields
@@ -369,8 +393,6 @@ router.post('/user', async (req, res) => {
             }
         };
    
-        
-
         let user;
         switch (role) {
             case 'principal':
@@ -459,7 +481,7 @@ router.post('/user', async (req, res) => {
 
     // Upload files , Pdf, Docx, Doc Image, Videos
 router.post("/stats", upload.single("file"), async (req, res) => {
-    const {  description, typeSchool, grade, subject, quarter, week } = req.body;
+    const {  description, grade, subject, quarter, week } = req.body;
     try {
         
       let fileData = null;
@@ -484,7 +506,6 @@ router.post("/stats", upload.single("file"), async (req, res) => {
   
       // Create and save file document
       const newItem = new Files({
-        typeSchool,
        grade,
        subject,
        quarter,
@@ -531,7 +552,7 @@ function getFileType(mimetype) {
 //   File Updates
 router.put('/statsUpdates/:id', upload.single("file"), async(req, res)=>{
     const { id } = req.params;
-    const {  description, typeSchool, grade, subject, quarter, week } = req.body;
+    const {  description, grade, subject, quarter, week } = req.body;
     try {
         const { updateData } = req.body;
         let fileData = null;
@@ -558,7 +579,6 @@ router.put('/statsUpdates/:id', upload.single("file"), async(req, res)=>{
   
     //   // Create and save file document
     //   const newItem = new Files({
-    //     typeSchool,
     //    grade,
     //    subject,
     //    quarter,

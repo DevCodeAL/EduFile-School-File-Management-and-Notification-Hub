@@ -15,6 +15,7 @@ import Schedule from "./pages/Principal Dashbord/Pages/SchedulePage";
 import Announcements from "./pages/Principal Dashbord/Pages/Announcement";
 import TeacherSchedule from "./pages/Teacher Dashbord/Modal/TeacherSchedule";
 import TeachersAnnouncement from "./pages/Teacher Dashbord/TeacherAnnouncement";
+import IndexHome from ".";
 
 function App() {
   const { user } = useAuth();
@@ -25,7 +26,7 @@ function App() {
     {user?.data.role === 'teacher' && <TeacherNavbar />}
     <Routes>
     {/* Default Routes */}
-    <Route path="/" index element={<Login/>}/>
+    <Route path="/" index element={<IndexHome/>}/>
 
       {/* Public Routes */}
       <Route path="/login" index element={<Login />} />

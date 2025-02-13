@@ -113,10 +113,10 @@ export default function Login() {
 
          {/* Forgot Password */}
          <div className="mb-6 text-center">
-  <span className="relative text-blue-500 font-semibold hover:text-blue-700 transition duration-300 cursor-pointer 
-                   after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-blue-500 
-                   hover:after:w-full after:transition-all after:duration-300">
-    Forgot Password?
+        <span className="relative text-blue-500 font-semibold hover:text-blue-700 transition duration-300 cursor-pointer 
+        after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-blue-500 
+        hover:after:w-full after:transition-all after:duration-300">
+          Forgot Password?
   </span>
 </div>
 

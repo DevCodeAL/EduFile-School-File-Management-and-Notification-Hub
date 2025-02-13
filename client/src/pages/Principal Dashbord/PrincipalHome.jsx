@@ -3,11 +3,12 @@ import { FaFilePdf, FaFileWord, FaFileExcel, FaFilePowerpoint } from "react-icon
 import Header from "../../components/Header";
 import ProfileModal from "../../components/Profile";
 import UploadLoading from "../../Success/UploadLoading";
-import { getAllSpecificTeachers } from "../../services/Api";
+import { deleteSpecificTeacher, getAllSpecificTeachers } from "../../services/Api";
 import { useAuth } from "../../context/AuthContext";
 import { getUserPending } from "../../services/Api";
 import { getAllFiles } from "../../services/Api";
 import TeachersProfile from "./Modal/TeachersDetails";
+import DeleteModalTeacher from "../../Error/DeleteTeacherAlert";
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 
@@ -16,7 +17,6 @@ const PrincipalDashboard = () => {
   const { user } = useAuth();
   const [pending, setPending] = useState([]);
   const [files, setFiles] = useState([]);
-  const [isTypeSchool, setTypeSchool] = useState(false);
   const [isGradesOpen, setGradesOpen] = useState(false);
   const [isSubjectsOpen, setSubjectsOpen] = useState(false);
   const [isQuartersOpen, setQuartersOpen] = useState(false);
@@ -25,8 +25,9 @@ const PrincipalDashboard = () => {
   const [openProfile, setOpenProfile] = useState(false);
   // Modal Teachers View 
   const [selectedUser, setSelectedUser] = useState(null);
+  const [isModalDeleteTeacher, setIsModalDeleteTeacher] = useState(false);
+  const [selectedByteacher, setIsSelectedByTeachers] = useState(null);
 
-  const [selectedSchool, setSelectedSchool] = useState("");
   const [selectedGrade, setSelectedGrade] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedQuarter, setSelectedQuarter] = useState("");
@@ -39,7 +40,6 @@ const PrincipalDashboard = () => {
   const [formData, setFormData] = useState({ 
     description: "", 
     file: null,
-    typeSchool: '',
     grade: '',
     subject: '',
      quarter: '',
@@ -49,20 +49,12 @@ const PrincipalDashboard = () => {
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
-      typeSchool: selectedSchool,
       grade: selectedGrade,
       subject: selectedSubject,
       quarter: selectedQuarter,
       week: selectedWeek,
     }));
-  }, [selectedSchool, selectedWeek, selectedGrade, selectedSubject, selectedQuarter]);
-
-// Handle Dropdown Event
-const handleSchoolSelect = (school, e)=>{
-  e.stopPropagation();
-    setSelectedSchool(school);
-    setGradesOpen(true);
-}
+  }, [selectedWeek, selectedGrade, selectedSubject, selectedQuarter]);
 
   const handleGradeSelect = (grade, e)=>{
     e.stopPropagation();
@@ -89,7 +81,6 @@ const handleSchoolSelect = (school, e)=>{
     setSubjectsOpen(false);
     setQuartersOpen(false);
     setWeek(false);
-    setTypeSchool(false);
   }
 
   // Seleted Option 
@@ -104,14 +95,12 @@ const handleSchoolSelect = (school, e)=>{
     setFormData({ 
      description: "", 
      file: null,
-     typeSchool: '',
      grade: '',
      subject: '',
       quarter: '',
       week: '',
    });
 
-   setSelectedSchool('');
    setSelectedGrade('');
    setSelectedSubject('');
    setSelectedQuarter('');
@@ -219,7 +208,6 @@ const handleSchoolSelect = (school, e)=>{
     const data = new FormData();
     data.append("description", formData.description);
     data.append("file", formData.file);
-    data.append("typeSchool", formData.typeSchool);
     data.append("grade", formData.grade);
     data.append("subject", formData.subject);
     data.append("quarter", formData.quarter);
@@ -287,7 +275,23 @@ useEffect(()=>{
 
   getTeachers();
 
-},[])
+},[]);
+
+// Create a function to delete a teachers user
+const HandleDeleteByTeachers = async (item)=>{
+     try {
+        await deleteSpecificTeacher(item._id);
+        setisSpecificUser((prev)=> {
+          prev.filter((t)=> t._id !== t._item);
+        });
+
+        setIsModalDeleteTeacher(false);
+
+     } catch (error) {
+        console.error('Failed to delete teachers', error);
+        throw error;
+     }
+}
 
 
 
@@ -357,7 +361,7 @@ useEffect(()=>{
                 </label>
                 <button
                   id="multiLevelDropdownButton"
-                  onClick={() => setTypeSchool(!isTypeSchool)}
+                  onClick={() => setGradesOpen(!isGradesOpen)}
                   className="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 inline-flex items-center justify-between dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                   type="button"
                 >
@@ -378,7 +382,7 @@ useEffect(()=>{
                     />
                   </svg>
                 </button>
-              {selectedSchool.lastIndexOf('l') < 0 ? (<span className="text-red-600 font-semibold text-xs" >Required</span>) : null}
+              {selectedGrade.indexOf('Kindergarten') < 0 && selectedGrade.indexOf('Grade')  < 0 ? (<span className="text-red-600 font-semibold text-xs" >Required</span>) : null}
               </div>
 
                 {/* Description */}
@@ -397,46 +401,13 @@ useEffect(()=>{
                 </div>
             <div>
 
-    {isTypeSchool && (
-    <div className="fixed inset-0  bg-black bg-opacity-50 z-50 flex items-center justify-center">
-        <div
-        id="multi-dropdown"
-        className="absolute z-10  top-36 bg-slate-50 divide-y divide-gray-200 rounded-lg shadow-lg w-1/3 dark:bg-gray-800 dark:divide-gray-700"
-      >
-        {/* School type dropdown */}
-    <div
-      id="schoolDropdown"
-      className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700"
-    >
-      {/* Heading */}
-      <div className="px-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-indigo-500 to-indigo-700 dark:from-indigo-700 dark:to-indigo-900 rounded-t-xl shadow-md">
-        Select type of school
-      </div>
-
-      <ul className="py-2 text-sm text-gray-800 dark:text-gray-200 p-2">
-        {[
-          "Integrated School",
-          "Elementary School",
-        ].map((school, index, array) => (
-          <li key={school}>
-            <button
-              type="button"
-              onClick={(e) => handleSchoolSelect(school, e)}
-              className="flex items-center justify-between w-full px-4 py-3 transition-all duration-300 ease-in-out rounded-md hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white hover:shadow-md"
-            >
-              {school}
-            </button>
-
-            {/* Underline separator (except for last item) */}
-            {index !== array.length - 1 && (
-              <div className="border-b border-gray-200 dark:border-gray-600 mx-4 my-1"></div>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
 
 {isGradesOpen && (
+  <div className="fixed inset-0  bg-black bg-opacity-50 z-50 flex items-center justify-center">
+      <div
+      id="multi-dropdown"
+      className="absolute z-10  top-36 bg-slate-50 divide-y divide-gray-200 rounded-lg shadow-lg w-1/3 dark:bg-gray-800 dark:divide-gray-700"
+    >
        <div
        id="gradeDropdown"
        className="absolute top-0 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full overflow-y-auto"  style={{maxHeight: '350px'}}
@@ -477,7 +448,7 @@ useEffect(()=>{
         ))}
       </ul>
     </div>
-    )}
+    
 
 
 
@@ -576,7 +547,9 @@ useEffect(()=>{
   </div>
  </div>
   )}
-</div>
+</div> 
+{/* End */}
+
 {/* Summary of uploads */}
 {isSummary && (
   <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-10">
@@ -590,10 +563,6 @@ useEffect(()=>{
 
       <h3 className="text-lg p-2 font-semibold text-gray-700 text-center">📌 Summary of upload</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-      <div className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-md text-center">
-          <p className="text-gray-600 text-sm">Selected School</p>
-          <p className="text-lg font-medium text-blue-600">{selectedSchool || "None"}</p>
-        </div>
         <div className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-md text-center">
           <p className="text-gray-600 text-sm">Selected Grade</p>
           <p className="text-lg font-medium text-blue-600">{selectedGrade || "None"}</p>
@@ -681,17 +650,17 @@ useEffect(()=>{
           <button
             type="button" onClick={handleContinueEvent}
             className={`px-4 py-2 ${formData.description
-               || formData.file || formData.typeSchool || formData.grade
+               || formData.file || formData.grade
                 || formData.quarter || formData.subject || formData.week 
                ? 
             'bg-blue-600  hover:bg-blue-700'
              : ' bg-gray-500'} text-white rounded-lg`}
             disabled={!formData.description
-              || !formData.file || !formData.typeSchool || !formData.grade
+              || !formData.file ||  !formData.grade
                || !formData.quarter || !formData.subject || !formData.week }
           >
             {formData.description
-               || formData.file || formData.typeSchool || formData.grade
+               || formData.file || formData.grade
                 || formData.quarter || formData.subject || formData.week 
                ? 
             'Continue'
@@ -702,30 +671,36 @@ useEffect(()=>{
     </div>
   </div>
 )}
-
           <section id="teachers" className="mt-8 bg-white shadow-lg rounded-xl p-6">
             <h2 className="text-xl font-semibold text-gray-700 mb-4">List of Teachers</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse rounded-xl overflow-y-auto" style={{maxHeight: '400px'}}>
+            <div className="overflow-y-auto" style={{maxHeight: '450px'}}>
+              <table className="w-full border-collapse rounded-xl">
                 <thead>
                   <tr className="bg-indigo-600 text-white">
+                  <th className="px-6 py-3 text-left font-medium">Profile</th>
                   <th className="px-6 py-3 text-left font-medium">Role</th>
                     <th className="px-6 py-3 text-left font-medium">Name</th>
                     <th className="px-6 py-3 text-left font-medium">School</th>
                     <th className="px-6 py-3 text-left font-medium">Email</th>
                     <th className="px-6 py-3 text-left font-medium">Status</th>
-                    <th className="px-6 py-3 text-left font-medium">Actions</th>
+                    <th className="px-6 py-3 text-center font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {isSpecificUser.map(item => (
                      <tr key={item._id} className="bg-white hover:bg-gray-100 transition">
-                      <td className="px-6 py-4 border-b">{item.role.toUpperCase()}</td>
+                      <td className="px-6 py-4 border-b">
+                      <img className="rounded-full w-10 h-10 border-2 border-blue-500" src={
+                          item?.metadata?.path ?
+                          `${VITE_API_BASE_URL}/${encodeURI(item?.metadata?.path.replace(/\\/g, "/"))}` : './png/avatar.png'} alt="Profile Picture" />
+                      </td>
+                     <td className="px-6 py-4 border-b">{item.role.toUpperCase()}</td>
                      <td className="px-6 py-4 border-b">{item.fullname}</td>
                      <td className="px-6 py-4 border-b">{item.school}</td>
                      <td className="px-6 py-4 border-b">{item.email}</td>
                      <td className="px-6 py-4 border-b text-green-500 font-semibold">Active</td>
                      <td className="px-6 py-4 border-b">
+                       <div className="flex justify-between gap-4">
                        <button onClick={()=>{
                         setOpenProfile(true);
                         setSelectedUser(item);
@@ -733,6 +708,15 @@ useEffect(()=>{
                         className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition">
                          View
                        </button>
+
+                       <button onClick={()=>{
+                          setIsSelectedByTeachers(item);
+                          setIsModalDeleteTeacher(true);
+                       }}
+                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition">
+                         Delete
+                       </button>
+                       </div>
                      </td>
                    </tr>
                   ))}
@@ -746,6 +730,16 @@ useEffect(()=>{
             onClose={()=> setOpenProfile(false)}
             item={selectedUser}
             />
+
+            {isModalDeleteTeacher && 
+            (<DeleteModalTeacher
+             isOpen={isModalDeleteTeacher}
+             onClose={()=> setIsModalDeleteTeacher(false)}
+             item={selectedByteacher}
+             onConfirm={()=> {
+              HandleDeleteByTeachers(selectedByteacher);
+             }}
+             />)}
       </main>
     </div>
   );

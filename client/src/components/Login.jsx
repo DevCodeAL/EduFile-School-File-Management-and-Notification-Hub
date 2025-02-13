@@ -51,16 +51,8 @@ async function HandleSubmit(e) {
 
 
   return (
-    <div className="flex w-full h-screen items-center justify-center relative overflow-hidden">
-    {/* Background Video */}
-    <video 
-      className="absolute top-0 left-0 w-full h-full object-cover" 
-      src="/video/edu.mp4" 
-      autoPlay 
-      muted 
-      loop
-    ></video>
-    
+    <div className="flex w-full h-screen bg-blue-100 items-center justify-center relative overflow-hidden">
+   
 {/* Alert if wrong password */}
     {isAlert && (
         <AlertWarning/>
@@ -72,7 +64,12 @@ async function HandleSubmit(e) {
     }}/>}
 
     {/* Login Card */}
-    <div className="relative z-10 h-auto w-96 rounded-xl bg-gray-300/50 backdrop-blur-md p-8 shadow-lg">
+    <div className="relative z-10 h-auto w-96 rounded-xl bg-white p-8 shadow-lg">
+        <div className="flex justify-center">
+        <img src={'/Logo/GUIMBA EAST DISTRICT.png'}
+        className="max-w-16 object-cover"
+        alt="EduLink-Logo" />
+        </div>
       {/* Title */}
       <h1 className="mb-4 text-center text-2xl font-bold text-gray-800">
         Welcome Back

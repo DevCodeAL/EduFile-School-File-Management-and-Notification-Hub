@@ -71,7 +71,7 @@ export const createAssociate = async (userData)=>{
     throw error;
   }
 }
-
+// Get Specific Teacher
 const API_SpecificTeachers = `${VITE_API_BASE_URL}/api/specificteachers`;
 
 export const getAllSpecificTeachers = async (id)=> {
@@ -82,7 +82,19 @@ export const getAllSpecificTeachers = async (id)=> {
     console.error("No specific teachers exist", error);
     throw error;
   }
-}
+};
+
+// Delete Specific teacher
+const API_Specific_DeletebyTeachers = `${VITE_API_BASE_URL}/api/deleteSpecificTeachers`;
+ export const deleteSpecificTeacher = async (teachersById)=>{
+    try {
+      const response = await axios.delete(`${API_Specific_DeletebyTeachers}/${teachersById}`);
+      return response.data;
+    } catch (error) {
+      console.error('No deleted data! , Check your backend or API!', error);
+      throw error;
+    }
+ }
 
 
 // Get All uploaded files

@@ -11,6 +11,7 @@ const UpdateProfile = ({isOpenProfile, isCancel})=> {
   const fileUrl = user?.data?.metadata?.path
     ? `${VITE_API_BASE_URL}/${encodeURI(user.data.metadata.path.replace(/\\/g, "/"))}`
     : "/png/avatar.png"; // Fallback to default avatar if path is missing
+
   
   // Handle form change
   const handleChange = (event)=>{

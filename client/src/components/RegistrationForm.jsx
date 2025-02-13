@@ -54,15 +54,7 @@ async function handleSubmit(e) {
 
   return (
     <>
-      <div className="flex w-full h-screen items-center justify-center relative overflow-hidden">
-         {/* Background Video */}
-    <video 
-      className="absolute top-0 left-0 w-full h-full object-cover" 
-      src="/video/edu.mp4" 
-      autoPlay 
-      muted 
-      loop
-    ></video>
+      <div className="flex w-full h-screen items-center bg-blue-100 justify-center relative overflow-hidden">
 
           {/* Loading for Registration */}
          {isLoading && (
@@ -76,7 +68,12 @@ async function handleSubmit(e) {
           }}/>}
 
 
-        <div className="relative z-10 h-auto w-96  bg-gray-300/50 backdrop-blur-md  sm:w-5/6 max-w-lg shadow-lg rounded-lg p-6 sm:p-8 ">
+        <div className="relative z-10 h-auto w-96 bg-white sm:w-5/6 max-w-lg shadow-lg rounded-lg p-6 sm:p-8 ">
+        <div className="flex justify-center">
+        <img src={'/Logo/GUIMBA EAST DISTRICT.png'}
+        className="max-w-16 object-cover"
+        alt="EduLink-Logo" />
+        </div>
           {/* Header */}
           <h2 className="text-2xl font-bold text-gray-700 text-center">Registration</h2>
           <p className="text-sm text-gray-500 text-center mt-2">

@@ -23,32 +23,29 @@ export default function UploadedFiles() {
 
   const transformToFolderStructure = (files) => {
     const structure = { name: "Learning Record Store (LRS)", subfolders: {} };
-  
+
     files.forEach((file) => {
-      const { typeSchool, grade, subject, quarter, week, files: fileList } = file;
-  
-      if (!structure.subfolders[typeSchool]) 
-        structure.subfolders[typeSchool] = { name: typeSchool, subfolders: {} };
-  
-      if (!structure.subfolders[typeSchool].subfolders[grade]) 
-        structure.subfolders[typeSchool].subfolders[grade] = { name: grade, subfolders: {} };
-  
-      if (!structure.subfolders[typeSchool].subfolders[grade].subfolders[subject])
-        structure.subfolders[typeSchool].subfolders[grade].subfolders[subject] = { name: subject, subfolders: {} };
-  
-      if (!structure.subfolders[typeSchool].subfolders[grade].subfolders[subject].subfolders[quarter])
-        structure.subfolders[typeSchool].subfolders[grade].subfolders[subject].subfolders[quarter] = { name: quarter, subfolders: {} };
-  
-      if (!structure.subfolders[typeSchool].subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week])
-        structure.subfolders[typeSchool].subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week] = { name: week, files: [] };
-  
-      // Store full file objects instead of only filenames
-      structure.subfolders[typeSchool].subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week].files.push(...fileList);
+        const { grade, subject, quarter, week, files: fileList } = file;
+
+        if (!structure.subfolders[grade]) 
+            structure.subfolders[grade] = { name: grade, subfolders: {} };
+
+        if (!structure.subfolders[grade].subfolders[subject]) 
+            structure.subfolders[grade].subfolders[subject] = { name: subject, subfolders: {} };
+
+        if (!structure.subfolders[grade].subfolders[subject].subfolders[quarter]) 
+            structure.subfolders[grade].subfolders[subject].subfolders[quarter] = { name: quarter, subfolders: {} };
+
+        if (!structure.subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week]) 
+            structure.subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week] = { name: week, files: [] };
+
+        // Store full file objects instead of only filenames
+        structure.subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week].files.push(...fileList);
     });
-  
+
     return [structure];
-  };
-  
+};
+
 
   useEffect(() => {
     const fetchAllFiles = async () => {

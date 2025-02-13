@@ -2,11 +2,6 @@ import mongoose, { Schema } from "mongoose";
 
 // File Schema
 const FileSchema = new Schema({
-  typeSchool:{
-    type: String,
-    required: true,
-  },
-  
   grade: {
     type: String,
      required: true,
