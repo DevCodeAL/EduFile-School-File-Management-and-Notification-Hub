@@ -27,7 +27,6 @@ export const getUserAdmin = async (authToken) => {
   }
 };
 
-
 // Registration API for Principal
 const API_Principal = `http://localhost:5000/api/principal`;
 
@@ -39,4 +38,15 @@ export const createPrincipal = async (userData)=>{
       console.error("Failed to create:", error);
       throw error;
     }
+};
+
+const API_AnouncementFiles = `http://localhost:5000/api/get-anouncement-files`;
+export const fetchAllAnnouncement = async ()=>{
+  try {
+    const response = await axios.get(API_AnouncementFiles);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch anouncement files', error);
+    throw error;
+  }
 }

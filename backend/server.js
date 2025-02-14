@@ -22,6 +22,7 @@ app.use(compression());
 app.use('/api', ItemRoutes);
 app.use("/files", express.static("files"));
 app.use('/profile', express.static('profile'));
+app.use('/anouncements', express.static('anouncements'))
 
 // Create HTTP server
 const server = http.createServer(app);

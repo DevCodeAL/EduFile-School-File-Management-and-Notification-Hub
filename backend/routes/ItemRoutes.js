@@ -2,7 +2,7 @@ import express from 'express';
 import bycrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import nodemailer from "nodemailer";
-import AdminUser from '../models/adminSchema.js';
+import AdminUser, { AnnouncementFiles } from '../models/adminSchema.js';
 import authMiddleware from '../middleware/authMiddleWare.js';
 import  { Files, NewAnnouncement, NewSchedule, PrincipalItems, Teacher } from '../models/PrincipalSchema.js';
 import upload from '../middleware/uploadMiddleware.js';
@@ -11,6 +11,7 @@ import { sendEmailToTeachers } from '../controllers/emailService.js';
 import { sendApprovalEmail } from '../controllers/sendEmailAproval.js';
 import { sendPrincipalsNotificationsEmail } from '../controllers/principalEmailServices.js';
 import uploadProfile from '../middleware/profileUpload.js';
+import uploadAnnouncementFile from '../middleware/announcementMiddleware.js';
 const router = express.Router();
 
 // Registration for Principal
@@ -553,6 +554,74 @@ function getFileType(mimetype) {
       return "xlsx"; // For .xlsx (modern Excel format)
     return "unknown";
   };
+
+
+// Admin Upload Anouncement File
+router.post('/annoncement-files', 
+  uploadAnnouncementFile.single('file'), async (req , res)=> {
+  const { title, date, message } = req.body;
+  console.log('Incoming Data: ', req.body);
+    try {
+
+        let fileData = null;
+        if(req.file){
+          const { originalname, mimetype, size, path } = req.file;
+  
+        // Determine file type
+        const fileType = getFileType(mimetype);
+        if (fileType === "unknown") {
+          return res.status(400).json({ message: "Unsupported file type" });
+        };
+
+        fileData = {
+          filename: originalname,
+          fileType,
+          mimetype,
+          size,
+          metadata: { path }, // Save path for internal reference
+        }
+
+        
+       // Helper Functions for Files
+       function getFileType(mimetype){
+        if(mimetype.startsWith('image')) return 'image';
+        if(mimetype.startsWith('video')) return 'video';
+        return "unknown";
+      };
+    }
+
+      const newItem = new AnnouncementFiles({
+            title,
+            date,
+            message,
+            files: fileData,
+        });
+
+        newItem.save();
+
+        res.status(200).json({message: newItem});
+      
+    } catch (error) {
+      res.status(500).json({message: 'Failed to create announcement files', error: error.message});
+    }
+});
+
+// Get All Announcement Files
+router.get('/get-anouncement-files', async (req, res)=>{
+  try {
+    const getItem = await AnnouncementFiles.find();
+
+     if(!getItem){
+        res.status(400).json({message: 'No announcement file exist!'});
+     };
+
+     req.status(200).json({success: 'Succefully fetch anouncement files!', data: getItem});
+  } catch (error) {
+    console.error('Failed to fetch!', error);
+  res.status(500).json({message: 'Failed to fetch anouncement files!', error: error.message});
+  }
+});
+
 
 //   File Updates
 router.put('/statsUpdates/:id', upload.single("file"), async(req, res)=>{
