@@ -1,6 +1,7 @@
 import express from 'express';
 import bycrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import nodemailer from "nodemailer";
 import AdminUser from '../models/adminSchema.js';
 import authMiddleware from '../middleware/authMiddleWare.js';
 import  { Files, NewAnnouncement, NewSchedule, PrincipalItems, Teacher } from '../models/PrincipalSchema.js';
@@ -317,7 +318,8 @@ router.post('/admin', async (req, res) => {
         // Check for missing fields
         if (!username || !password) {
             return res.status(400).json({ message: 'All fields are required!' });
-        }
+        };
+        
 
         // Find the admin user by username
         const userAdmin = await AdminUser.findOne({ username });
@@ -325,7 +327,9 @@ router.post('/admin', async (req, res) => {
             return res.status(401).json({ message: 'Invalid username' });
         }
 
-        if (userAdmin.password !== password) {
+        const isMatch = bycrypt.compare(password, userAdmin.password);
+
+        if (!isMatch) {
             return res.status(401).json({ message: 'Invalid password!' });
         }
 
@@ -355,6 +359,7 @@ router.post('/admin', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 // Profile for Admin
 router.get('/profile', authMiddleware, async (req, res) => {
@@ -851,6 +856,131 @@ router.delete('/announcementDelete/:id', async (req, res)=>{
     }
 });
 
-  
+// Forgot Password for Principal and Admin
+router.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
+console.log('Incoming body:', req.body);
+  try {
+    const user = await PrincipalItems.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found!" });
+
+    // Generate Reset Token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "15m" });
+
+    // Store Token in Database
+    user.resetToken = token;
+    user.tokenExpiry = Date.now() + 15 * 60 * 1000; // Expires in 15 min
+    await user.save();
+
+    // Send Email with Reset Link
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: process.env.EMAIL, pass: process.env.EMAIL_PASSWORD },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: user.email,
+      subject: "Password Reset Request",
+      html: `<p>Click <a href="http://localhost:5173/reset-password/${token}">here</a> to reset your password.</p>`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.json({ message: "Reset link sent to your email!" });
+  } catch (error) {
+    console.error("Forgot Password Error:", error);
+    res.status(500).json({ message: "Error sending email." });
+  }
+});
+
+// Reset Password
+router.post("/reset-password/:token", async (req, res) => {
+  const { token } = req.params;
+  const { password, confirmPassword } = req.body;
+
+  if (!password || !confirmPassword) {
+    return res.status(400).json({ message: "Both fields are required!" });
+  }
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({ message: "Passwords do not match!" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const hashedPassword = await bycrypt.hash(password, 10);
+
+    await PrincipalItems.findByIdAndUpdate(decoded.id, { password: hashedPassword });
+
+    res.json({ message: "Password has been reset successfully!" });
+  } catch (error) {
+    res.status(400).json({ message: "Invalid or expired token!" });
+  }
+});
+
+
+
+// Forgot Password for Admin
+router.post("/forgot-password-admin", async (req, res) => {
+  const { email } = req.body;
+console.log('Incoming body:', req.body);
+  try {
+    const user = await AdminUser.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found!" });
+
+    // Generate Reset Token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "15m" });
+
+    // Store Token in Database
+    user.resetToken = token;
+    user.tokenExpiry = Date.now() + 15 * 60 * 1000; // Expires in 15 min
+    await user.save();
+
+    // Send Email with Reset Link
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: process.env.EMAIL, pass: process.env.EMAIL_PASSWORD },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: user.email,
+      subject: "Password Reset Request",
+      html: `<p>Click <a href="http://localhost:5173/reset-password-admin/${token}">here</a> to reset your password.</p>`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.json({ message: "Reset link sent to your email!" });
+  } catch (error) {
+    console.error("Forgot Password Error:", error);
+    res.status(500).json({ message: "Error sending email." });
+  }
+});
+
+// Reset Password
+router.post("/reset-password-admin/:token", async (req, res) => {
+  const { token } = req.params;
+  const { password, confirmPassword } = req.body;
+
+  if (!password || !confirmPassword) {
+    return res.status(400).json({ message: "Both fields are required!" });
+  }
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({ message: "Passwords do not match!" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const hashedPassword = await bycrypt.hash(password, 10);
+
+    await AdminUser.findByIdAndUpdate(decoded.id, { password: hashedPassword });
+
+    res.json({ message: "Password has been reset successfully!" });
+  } catch (error) {
+    res.status(400).json({ message: "Invalid or expired token!" });
+  }
+});
+
 
 export default router;

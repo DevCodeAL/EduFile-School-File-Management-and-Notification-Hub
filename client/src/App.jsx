@@ -16,6 +16,8 @@ import Announcements from "./pages/Principal Dashbord/Pages/Announcement";
 import TeacherSchedule from "./pages/Teacher Dashbord/Modal/TeacherSchedule";
 import TeachersAnnouncement from "./pages/Teacher Dashbord/TeacherAnnouncement";
 import IndexHome from ".";
+import ForgotPassword from "./ResetPassword/ForgotPassword";
+import ResetPassword from "./ResetPassword/ResetPassword";
 
 function App() {
   const { user } = useAuth();
@@ -31,6 +33,8 @@ function App() {
       {/* Public Routes */}
       <Route path="/login" index element={<Login />} />
       <Route path="/register" element={<RegistrationForm />} />
+      <Route path="/forgot-pass" element={<ForgotPassword/>} />
+      <Route path="/reset-password/:token" element={<ResetPassword/>}/>
   
       {/* Principal Routes */}
       <Route

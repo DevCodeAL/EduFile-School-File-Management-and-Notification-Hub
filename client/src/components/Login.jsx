@@ -64,7 +64,7 @@ async function HandleSubmit(e) {
     }}/>}
 
     {/* Login Card */}
-    <div className="relative z-10 h-auto w-96 rounded-xl bg-white p-8 shadow-lg">
+    <div className="relative z-10 h-auto w-96 rounded-xl bg-white p-8 pt-3 pb-3 shadow-lg">
         <div className="flex justify-center">
         <img src={'/Logo/GUIMBA EAST DISTRICT.png'}
         className="max-w-16 object-cover"
@@ -150,6 +150,12 @@ async function HandleSubmit(e) {
         >
           {`Login as ${isUser.role}`}
         </button>
+
+        <span className="flex justify-center pt-1">
+          <Link to='/forgot-pass' className="text-blue-500 text-base underline">
+            Forgot Password
+          </Link>
+        </span>
   
         {/* Register Link */}
         <div className="mt-4 text-center">

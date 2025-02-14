@@ -1,6 +1,6 @@
 import { Button, Label, } from "flowbite-react";
 import { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from "../AuthContext/AuthContext";
 import AdminLoading from "../LoadingAdmin/AdminLoading";
 import Warning from "../Error/Alert";
@@ -53,15 +53,7 @@ export default function Login() {
   }
     
   return (
-    <div className="flex w-full h-screen items-center justify-center relative overflow-hidden">
-      <video 
-      className="absolute top-0 left-0 w-full h-full object-cover" 
-      src="/video/edu.mp4" 
-      autoPlay 
-      muted 
-      loop
-    ></video>
-
+    <div className="flex w-full h-screen items-center justify-center bg-blue-200 relative overflow-hidden">
    {isAlert && (
      <Warning/>
    )}
@@ -70,7 +62,7 @@ export default function Login() {
         <AdminLoading/>
     )}
 
-      <form onSubmit={HandleSubmit} className="relative z-10 h-auto w-96 rounded-xl bg-gray-300/50 backdrop-blur-md p-8 shadow-lg">
+      <form onSubmit={HandleSubmit} className="relative z-10 h-auto w-96 rounded-xl bg-white p-8 shadow-lg">
         {/* Title */}
         <h1 className="mb-4 text-center text-2xl font-bold text-gray-800">
         Administrator
@@ -116,7 +108,9 @@ export default function Login() {
         <span className="relative text-blue-500 font-semibold hover:text-blue-700 transition duration-300 cursor-pointer 
         after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-blue-500 
         hover:after:w-full after:transition-all after:duration-300">
-          Forgot Password?
+         <Link to={'/forgot-password-admin'}>
+            Forgot Password?
+         </Link>
   </span>
 </div>
 

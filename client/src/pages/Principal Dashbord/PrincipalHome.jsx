@@ -671,59 +671,71 @@ const HandleDeleteByTeachers = async (item)=>{
     </div>
   </div>
 )}
-          <section id="teachers" className="mt-8 bg-white shadow-lg rounded-xl p-6">
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">List of Teachers</h2>
-            <div className="overflow-y-auto" style={{maxHeight: '450px'}}>
-              <table className="w-full border-collapse rounded-xl">
-                <thead>
-                  <tr className="bg-indigo-600 text-white">
-                  <th className="px-6 py-3 text-left font-medium">Profile</th>
-                  <th className="px-6 py-3 text-left font-medium">Role</th>
-                    <th className="px-6 py-3 text-left font-medium">Name</th>
-                    <th className="px-6 py-3 text-left font-medium">School</th>
-                    <th className="px-6 py-3 text-left font-medium">Email</th>
-                    <th className="px-6 py-3 text-left font-medium">Status</th>
-                    <th className="px-6 py-3 text-center font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {isSpecificUser.map(item => (
-                     <tr key={item._id} className="bg-white hover:bg-gray-100 transition">
-                      <td className="px-6 py-4 border-b">
-                      <img className="rounded-full w-10 h-10 border-2 border-blue-500" src={
-                          item?.metadata?.path ?
-                          `${VITE_API_BASE_URL}/${encodeURI(item?.metadata?.path.replace(/\\/g, "/"))}` : './png/avatar.png'} alt="Profile Picture" />
-                      </td>
-                     <td className="px-6 py-4 border-b">{item.role.toUpperCase()}</td>
-                     <td className="px-6 py-4 border-b">{item.fullname}</td>
-                     <td className="px-6 py-4 border-b">{item.school}</td>
-                     <td className="px-6 py-4 border-b">{item.email}</td>
-                     <td className="px-6 py-4 border-b text-green-500 font-semibold">Active</td>
-                     <td className="px-6 py-4 border-b">
-                       <div className="flex justify-between gap-4">
-                       <button onClick={()=>{
-                        setOpenProfile(true);
-                        setSelectedUser(item);
-                       }}
-                        className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition">
-                         View
-                       </button>
+         <section id="teachers" className="mt-8 bg-white shadow-lg rounded-xl p-6">
+  <h2 className="text-xl font-semibold text-gray-700 mb-4">List of Teachers</h2>
 
-                       <button onClick={()=>{
-                          setIsSelectedByTeachers(item);
-                          setIsModalDeleteTeacher(true);
-                       }}
-                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition">
-                         Delete
-                       </button>
-                       </div>
-                     </td>
-                   </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+  <div className="overflow-x-auto"> {/* Enables horizontal scrolling */}
+    <div className="overflow-y-auto" style={{ maxHeight: '450px' }}>
+      <table className="w-full min-w-max border-collapse rounded-xl">
+        <thead>
+          <tr className="bg-indigo-600 text-white">
+            <th className="px-4 py-3 text-left font-medium">Profile</th>
+            <th className="px-4 py-3 text-left font-medium">Role</th>
+            <th className="px-4 py-3 text-left font-medium">Name</th>
+            <th className="px-4 py-3 text-left font-medium">School</th>
+            <th className="px-4 py-3 text-left font-medium">Email</th>
+            <th className="px-4 py-3 text-left font-medium">Status</th>
+            <th className="px-4 py-3 text-center font-medium">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {isSpecificUser.map(item => (
+            <tr key={item._id} className="bg-white hover:bg-gray-100 transition">
+              <td className="px-4 py-4 border-b">
+                <img 
+                  className="rounded-full w-10 h-10 border-2 border-blue-500" 
+                  src={item?.metadata?.path ? 
+                    `${VITE_API_BASE_URL}/${encodeURI(item?.metadata?.path.replace(/\\/g, "/"))}` 
+                    : './png/avatar.png'} 
+                  alt="Profile Picture" 
+                />
+              </td>
+              <td className="px-4 py-4 border-b whitespace-nowrap">{item.role.toUpperCase()}</td>
+              <td className="px-4 py-4 border-b whitespace-nowrap">{item.fullname}</td>
+              <td className="px-4 py-4 border-b whitespace-nowrap">{item.school}</td>
+              <td className="px-4 py-4 border-b whitespace-nowrap">{item.email}</td>
+              <td className="px-4 py-4 border-b text-green-500 font-semibold">Active</td>
+              <td className="px-4 py-4 border-b">
+                <div className="flex flex-wrap justify-center gap-2">
+                  <button 
+                    onClick={() => {
+                      setOpenProfile(true);
+                      setSelectedUser(item);
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
+                  >
+                    View
+                  </button>
+
+                  <button 
+                    onClick={() => {
+                      setIsSelectedByTeachers(item);
+                      setIsModalDeleteTeacher(true);
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
          {/* View Specific Profile Teachers */}
           <TeachersProfile
            isOpen={openProfile}
@@ -738,6 +750,7 @@ const HandleDeleteByTeachers = async (item)=>{
              item={selectedByteacher}
              onConfirm={()=> {
               HandleDeleteByTeachers(selectedByteacher);
+              setIsModalDeleteTeacher(false);
              }}
              />)}
       </main>

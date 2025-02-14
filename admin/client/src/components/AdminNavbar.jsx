@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
+import { FcCalendar } from "react-icons/fc";
 
 function AdminSidebar() {
   const location = useLocation();
@@ -13,26 +14,56 @@ const isActive = (path) => {
 
   return (
     <aside className="fixed bg-blue-600 text-white w-64 h-screen shadow-lg">
-      <div className="flex items-center justify-center py-6 border-b border-white/20">
-        <h1 className="text-2xl font-bold">EduPortal Admin</h1>
-      </div>
+      <div className="text-center py-6 border-b border-white/20">
+         <h1 className="text-xl font-bold">Guimba East EduLink</h1>
+        <p className="text-sm opacity-80">Empowering Education</p>
+        </div>
       <nav className="mt-6">
         <ul className="space-y-4 px-4">
           <li>
             <Link to="/dashboard" className={isActive('/dashboard')}>
-              <span className="text-white text-sm font-medium">Dashboard</span>
+            <span className="text-sm font-medium">
+            📊 Dashboard</span>
             </Link>
           </li>
           <li>
             <Link to="/user-management" className={isActive('/user-management')}>
-              <span className="text-white text-sm font-medium">User Management</span>
+            <span className="text-white text-sm font-medium">
+            <span className="text-lg">👨🏻‍💻</span> User Management
+            </span>
             </Link>
           </li>
           <li>
             <Link to="/file-management" className={isActive('/file-management')}>
-              <span className="text-white text-sm font-medium">File Management</span>
+              <span className="text-white text-sm font-medium">📁 File Management</span>
             </Link>
           </li>
+
+          <li>
+          <Link to="/admin-announcement" className={isActive('/admin-announcement')}>
+              <span className="text-white text-sm font-medium">
+              📢 Announcements
+              </span>
+            </Link>
+          </li>
+
+          <li>
+          <Link to="/admin-events" className={isActive('/admin-events')}>
+              <span className="text-white text-sm font-medium">
+              📅 Events
+              </span>
+            </Link>
+          </li>
+
+          <li>
+          <Link to="/admin-news" className={isActive('/admin-news')}>
+              <span className="text-white text-sm font-medium">
+                📰 News
+              </span>
+            </Link>
+          </li>
+
+
           <li>
             <Link to="/settings" className={'/settings'}>
               <span className="text-white text-sm font-medium">Settings</span>
