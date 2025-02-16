@@ -2,7 +2,7 @@ import express from 'express';
 import bycrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import nodemailer from "nodemailer";
-import AdminUser, { AnnouncementFiles } from '../models/adminSchema.js';
+import AdminUser, { AnnouncementFiles, EventsFilesSchema, NewsFilesSchema } from '../models/adminSchema.js';
 import authMiddleware from '../middleware/authMiddleWare.js';
 import  { Files, NewAnnouncement, NewSchedule, PrincipalItems, Teacher } from '../models/PrincipalSchema.js';
 import upload from '../middleware/uploadMiddleware.js';
@@ -12,6 +12,8 @@ import { sendApprovalEmail } from '../controllers/sendEmailAproval.js';
 import { sendPrincipalsNotificationsEmail } from '../controllers/principalEmailServices.js';
 import uploadProfile from '../middleware/profileUpload.js';
 import uploadAnnouncementFile from '../middleware/announcementMiddleware.js';
+import uploadNewsFile from '../middleware/newMiddleWare.js';
+import uploadEventFile from '../middleware/eventMiddleWare.js';
 const router = express.Router();
 
 // Registration for Principal
@@ -555,56 +557,56 @@ function getFileType(mimetype) {
     return "unknown";
   };
 
-
-// Admin Upload Anouncement File
-router.post('/annoncement-files', 
-  uploadAnnouncementFile.single('file'), async (req , res)=> {
-  const { title, date, message } = req.body;
-  console.log('Incoming Data: ', req.body);
-    try {
-
-        let fileData = null;
-        if(req.file){
-          const { originalname, mimetype, size, path } = req.file;
   
-        // Determine file type
-        const fileType = getFileType(mimetype);
-        if (fileType === "unknown") {
-          return res.status(400).json({ message: "Unsupported file type" });
-        };
+// Admin Upload Announcement Files
+router.post('/announcement-files', 
+  uploadAnnouncementFile.array('files', 10), async (req, res) => {
+    const { title, date, message } = req.body;
+    try {
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ error: "No files uploaded" });
+      }
 
-        fileData = {
+      // Function to determine file type
+      function getFileType(mimetype) {
+        if (mimetype.startsWith('image')) return 'image';
+        if (mimetype.startsWith('video')) return 'video';
+        return 'unknown';
+      }
+
+      // Map through files and create file data
+      const filesData = req.files.map(file => {
+        const { originalname, mimetype, size, path } = file;
+
+        const fileType = getFileType(mimetype);
+        if (fileType === 'unknown') {
+          throw new Error(`Unsupported file type: ${originalname}`);
+        }
+
+        return {
           filename: originalname,
           fileType,
           mimetype,
           size,
           metadata: { path }, // Save path for internal reference
-        }
+        };
+      });
 
-        
-       // Helper Functions for Files
-       function getFileType(mimetype){
-        if(mimetype.startsWith('image')) return 'image';
-        if(mimetype.startsWith('video')) return 'video';
-        return "unknown";
-      };
-    }
-
+      // Create a new Announcement with files data
       const newItem = new AnnouncementFiles({
-            title,
-            date,
-            message,
-            files: fileData,
-        });
+        title,
+        date,
+        message,
+        files: filesData, // Multiple files
+      });
 
-        newItem.save();
+      await newItem.save();
 
-        res.status(200).json({message: newItem});
-      
+      res.status(200).json({ message: 'Announcement file(s) uploaded successfully', newItem });
     } catch (error) {
-      res.status(500).json({message: 'Failed to create announcement files', error: error.message});
+      res.status(500).json({ message: 'Failed to create announcement files', error: error.message });
     }
-});
+  });
 
 // Get All Announcement Files
 router.get('/get-anouncement-files', async (req, res)=>{
@@ -615,12 +617,147 @@ router.get('/get-anouncement-files', async (req, res)=>{
         res.status(400).json({message: 'No announcement file exist!'});
      };
 
-     req.status(200).json({success: 'Succefully fetch anouncement files!', data: getItem});
+     res.status(200).json({success: 'Succefully fetch anouncement files!', data: getItem});
   } catch (error) {
     console.error('Failed to fetch!', error);
   res.status(500).json({message: 'Failed to fetch anouncement files!', error: error.message});
   }
 });
+
+// News Upload Files
+router.post('/newsItem-files', 
+  uploadNewsFile.array('files', 10), async (req, res) => {
+    const { title, date, message } = req.body;
+    try {
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ error: "No files uploaded" });
+      }
+
+      // Function to determine file type
+      function getFileType(mimetype) {
+        if (mimetype.startsWith('image')) return 'image';
+        if (mimetype.startsWith('video')) return 'video';
+        return 'unknown';
+      }
+
+      // Map through files and create file data
+      const filesData = req.files.map(file => {
+        const { originalname, mimetype, size, path } = file;
+
+        const fileType = getFileType(mimetype);
+        if (fileType === 'unknown') {
+          throw new Error(`Unsupported file type: ${originalname}`);
+        }
+
+        return {
+          filename: originalname,
+          fileType,
+          mimetype,
+          size,
+          metadata: { path }, // Save path for internal reference
+        };
+      });
+
+      // Create a new Announcement with files data
+      const newItem = new NewsFilesSchema({
+        title,
+        date,
+        message,
+        files: filesData, // Multiple files
+      });
+
+      await newItem.save();
+
+      res.status(200).json({ message: 'Announcement file(s) uploaded successfully', newItem });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to create announcement files', error: error.message });
+    }
+  });
+
+  // Get All News Files
+router.get('/get-news-files', async (req, res)=>{
+  try {
+    const getItem = await NewsFilesSchema.find();
+
+     if(!getItem){
+        res.status(400).json({message: 'No announcement file exist!'});
+     };
+
+     res.status(200).json({success: 'Succefully fetch anouncement files!', data: getItem});
+  } catch (error) {
+    console.error('Failed to fetch!', error);
+  res.status(500).json({message: 'Failed to fetch anouncement files!', error: error.message});
+  }
+});
+
+
+// Event Upload Files
+router.post('/eventsItem-files', 
+ uploadEventFile.array('files', 10), async (req, res) => {
+    const { title, date, message } = req.body;
+    try {
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ error: "No files uploaded" });
+      }
+
+      // Function to determine file type
+      function getFileType(mimetype) {
+        if (mimetype.startsWith('image')) return 'image';
+        if (mimetype.startsWith('video')) return 'video';
+        return 'unknown';
+      }
+
+      // Map through files and create file data
+      const filesData = req.files.map(file => {
+        const { originalname, mimetype, size, path } = file;
+
+        const fileType = getFileType(mimetype);
+        if (fileType === 'unknown') {
+          throw new Error(`Unsupported file type: ${originalname}`);
+        }
+
+        return {
+          filename: originalname,
+          fileType,
+          mimetype,
+          size,
+          metadata: { path }, // Save path for internal reference
+        };
+      });
+
+      // Create a new Announcement with files data
+      const newItem = new EventsFilesSchema({
+        title,
+        date,
+        message,
+        files: filesData, // Multiple files
+      });
+
+      await newItem.save();
+
+      res.status(200).json({ message: 'Announcement file(s) uploaded successfully', newItem });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to create announcement files', error: error.message });
+    }
+  });
+
+    // Get All Events Files
+router.get('/get-events-files', async (req, res)=>{
+  try {
+    const getItem = await EventsFilesSchema.find();
+
+     if(!getItem){
+        res.status(400).json({message: 'No announcement file exist!'});
+     };
+
+     res.status(200).json({success: 'Succefully fetch anouncement files!', data: getItem});
+  } catch (error) {
+    console.error('Failed to fetch!', error);
+  res.status(500).json({message: 'Failed to fetch anouncement files!', error: error.message});
+  }
+});
+
+
 
 
 //   File Updates

@@ -39,7 +39,7 @@ export const createPrincipal = async (userData)=>{
       throw error;
     }
 };
-
+// Get announcement files
 const API_AnouncementFiles = `http://localhost:5000/api/get-anouncement-files`;
 export const fetchAllAnnouncement = async ()=>{
   try {
@@ -50,3 +50,27 @@ export const fetchAllAnnouncement = async ()=>{
     throw error;
   }
 }
+
+// get-news-files
+const API_NewsFiles = `http://localhost:5000/api/get-news-files`;
+export const fetchAllNews = async ()=>{
+  try {
+    const response = await axios.get(API_NewsFiles);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch anouncement files', error);
+    throw error;
+  }
+};
+
+// get-events-files
+const API_NewsEvents = `http://localhost:5000/api/get-events-files`;
+export const fetchAllEvents = async ()=>{
+  try {
+    const response = await axios.get(API_NewsEvents);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch anouncement files', error);
+    throw error;
+  }
+};

@@ -281,4 +281,41 @@ export const updateFiles = async (id, updateData)=>{
     console.error('No updated File', error);
     throw error;
   }
-}
+};
+
+// Fetch All announcemnt from admin
+const API_AnouncementFiles = `http://localhost:5000/api/get-anouncement-files`;
+export const fetchAllAnnouncements = async ()=>{
+  try {
+    const response = await axios.get(API_AnouncementFiles);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch anouncement files', error);
+    throw error;
+  }
+};
+
+// get-news-files
+const API_NewsFiles = `http://localhost:5000/api/get-news-files`;
+export const fetchAllNews = async ()=>{
+  try {
+    const response = await axios.get(API_NewsFiles);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch anouncement files', error);
+    throw error;
+  }
+};
+
+
+// Fetch All Events Files
+const API_NewsEvents = `http://localhost:5000/api/get-events-files`;
+export const fetchAllEvents = async ()=>{
+  try {
+    const response = await axios.get(API_NewsEvents);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch anouncement files', error);
+    throw error;
+  }
+};

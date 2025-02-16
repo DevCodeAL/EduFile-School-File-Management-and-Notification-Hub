@@ -15,7 +15,7 @@ import Schedule from "./pages/Principal Dashbord/Pages/SchedulePage";
 import Announcements from "./pages/Principal Dashbord/Pages/Announcement";
 import TeacherSchedule from "./pages/Teacher Dashbord/Modal/TeacherSchedule";
 import TeachersAnnouncement from "./pages/Teacher Dashbord/TeacherAnnouncement";
-import IndexHome from ".";
+import IndexHome from "./components";
 import ForgotPassword from "./ResetPassword/ForgotPassword";
 import ResetPassword from "./ResetPassword/ResetPassword";
 
