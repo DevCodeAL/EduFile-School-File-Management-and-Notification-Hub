@@ -74,3 +74,16 @@ export const fetchAllEvents = async ()=>{
     throw error;
   }
 };
+
+// -----------------------------------------------
+// Update Announcements
+const API_UpdateAnnoucements = `http://localhost:5000/api/update-announcement-admin`;
+export const createUpdateAnnouncements = async (updateId)=>{
+  try {
+    const response = await axios.put(`${API_UpdateAnnoucements}/${updateId}`);
+    return response.data;
+  } catch (error) {
+    console.error('No Updated Announcements', error);
+    throw error;
+  }
+}

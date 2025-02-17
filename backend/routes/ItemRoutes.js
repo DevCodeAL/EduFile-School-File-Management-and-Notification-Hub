@@ -1062,6 +1062,74 @@ router.delete('/announcementDelete/:id', async (req, res)=>{
     }
 });
 
+// ---------------------------------------------------------------------------------------
+// Update Anouncement for Admin Dashboard
+router.put('/update-announcement-admin', async (req, res)=>{
+  const { updateId } = req.params;
+  
+    try {
+
+      const updateData = req.body;
+
+      const newAnnouncement = await AnnouncementFiles.findByIdAndUpdate(updateId, updateData);
+
+      if(!newAnnouncement){
+        return res.status(400).json({message: 'No Announcement exist'});
+      };
+      
+
+      res.status(200).json({ message: 'Succefully Updated Annoucements!', data: newAnnouncement });
+    } catch (error) {
+      
+    }
+});
+
+// Delete Announcement for Admin Dashboard
+router.delete('/announcement-delete', async (req, res)=>{
+      try {
+        
+      } catch (error) {
+        
+      }
+});
+
+// Update Events for Admin Dashboard
+router.put('/update-events-admin', async (req, res)=>{
+  try {
+
+  } catch (error) {
+    
+  }
+});
+
+// Delete Events for Admin Dashboard
+router.delete('/events-delete', async (req, res)=>{
+  try {
+    
+  } catch (error) {
+    
+  }
+});
+
+// Update News for Admin Dashboard
+router.put('/update-news-admin', async (req, res)=>{
+  try {
+
+  } catch (error) {
+    
+  }
+});
+
+// Delete News for Admin Dashboard
+router.delete('/news-delete', async (req, res)=>{
+  try {
+    
+  } catch (error) {
+    
+  }
+});
+// ----------------------------------------------------------------------------------------------
+
 // Forgot Password for Principal and Admin
 router.post("/forgot-password", async (req, res) => {
   const { email } = req.body;

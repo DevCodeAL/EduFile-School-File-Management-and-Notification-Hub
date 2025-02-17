@@ -256,7 +256,9 @@ export default function AdminEvents(){
   </div>
 )}
         {/* Read More Button */}
-        <button className="mt-4 text-blue-500 hover:underline" onClick={null}>
+        <button className="mt-4 text-blue-500 hover:underline" onClick={()=>{
+          setSelectednewItem(newItem);
+        }}>
           Read More
         </button>
       </div>
@@ -272,8 +274,8 @@ export default function AdminEvents(){
   )}
 </div>
 
-                 </main>
-               </div>
-        </>
+    </main>
+  </div>
+</>
     )
 }

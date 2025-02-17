@@ -256,7 +256,7 @@ export default function AdminNews(){
   </div>
 )}
         {/* Read More Button */}
-        <button className="mt-4 text-blue-500 hover:underline" onClick={null}>
+        <button className="mt-4 text-blue-500 hover:underline" onClick={()=> setSelectednewItem(newItem)}>
           Read More
         </button>
       </div>

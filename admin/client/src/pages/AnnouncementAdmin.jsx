@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import AnnouncementModal from "../Modal/AnnouncementModal";
 import { fetchAllAnnouncement } from "../Services/ItemServices";
+import AnnouncementsUpdate from "../Modal/UpdateModal/AnnouncementUpdate";
 
 export default function AdminAnnouncement(){
       const [isOpen, setIsOpen] = useState(false);
       const [selectedAnnouncement, setSelectedAnnouncement] = useState(false);
+      const [selectedAnnouncementUpdates, setSelectedAnnouncementUpdates] = useState(false);
+      const [isSelectedAnnouncement, setIsSelectedAnnouncement] = useState(null);
       const [announcements, setAnnouncements] = useState([]);
       const [formData, setFormData] = useState({
         title: "",
@@ -20,7 +23,6 @@ export default function AdminAnnouncement(){
         try {
           const response = await fetchAllAnnouncement();
           setAnnouncements(response.data);
-          console.log('Data: ', response.data);
         } catch (error) {
           console.error('No files exist!', error);
           throw error;
@@ -96,6 +98,11 @@ export default function AdminAnnouncement(){
       );
     }
     return null;
+  };
+
+  const HandleUpdate = (announcement)=>{
+    setIsSelectedAnnouncement(announcement);
+    setSelectedAnnouncementUpdates(true);
   };
       
   
@@ -208,7 +215,11 @@ export default function AdminAnnouncement(){
           
           {/* Edit & Delete Buttons - Shown on Hover */}
           <div className="hidden group-hover:flex flex-col absolute right-0 top-8 bg-white shadow-lg border border-gray-200 rounded-lg w-28 p-2 z-10">
-            <button className="flex items-center gap-2 text-gray-700 hover:text-blue-600 p-2 w-full text-sm">
+            <button 
+            onClick={()=> 
+              HandleUpdate(announcement)
+            }
+             className="flex items-center gap-2 text-gray-700 hover:text-blue-600 p-2 w-full text-sm">
               ✏️ Edit
             </button>
             <button className="flex items-center gap-2 text-gray-700 hover:text-red-600 p-2 w-full text-sm">
@@ -229,7 +240,7 @@ export default function AdminAnnouncement(){
         </p>
 
         {/* Image Grid with Full-Width Single Image */}
-{announcement.files && announcement.files.length > 0 && (
+  {announcement.files && announcement.files.length > 0 && (
   <div className={`mt-3 grid gap-2 ${announcement.files.length === 1 ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"}`}>
     {announcement.files.slice(0, 3).map((file, index) => (
       file?.metadata?.path ? (
@@ -256,7 +267,8 @@ export default function AdminAnnouncement(){
   </div>
 )}
         {/* Read More Button */}
-        <button className="mt-4 text-blue-500 hover:underline" onClick={null}>
+        <button className="mt-4 text-blue-500 hover:underline"
+         onClick={()=> setSelectedAnnouncement(announcement)}>
           Read More
         </button>
       </div>
@@ -270,10 +282,21 @@ export default function AdminAnnouncement(){
       onClose={() => setSelectedAnnouncement(null)}
     />
   )}
-</div>
 
-                 </main>
-               </div>
+  {/* Announcement Updates */}
+  {selectedAnnouncementUpdates &&
+   <AnnouncementsUpdate isOpenAnnouncement={selectedAnnouncementUpdates} 
+   announcement={isSelectedAnnouncement}
+   onUpdate={(updateData)=>{
+      setAnnouncements((prevData)=>{
+        prevData.map((t)=> t._id === updateData._id ? updateData : t)
+      });
+   }}
+   isCloseAnnouncement={()=> 
+   setSelectedAnnouncementUpdates(false)}/>}
+</div>
+  </main>
+</div>
         </>
     )
 }
