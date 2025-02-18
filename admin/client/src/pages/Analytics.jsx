@@ -1,14 +1,46 @@
 import React from "react";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
+import { useEffect, useState } from "react";
+import { getAllUsers, getAllUsersTeachers,  getAllFiles  } from "../Services/ItemServices";
 
 // Register necessary components for Chart.js
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Analytics = () => {
+   const [userItems, setIsUserItems] = useState([]);
+   const [userItemsTeachers, setIsUserItemsTeachers] = useState([]);
+   const [files, setFiles] = useState([]);
+
+   const allUserItems = userItems.concat(userItemsTeachers).length;
+   const allFiles = files.length;
+   const principalTotal = userItems.length;
+   const teachersTotal = userItemsTeachers.length;
+
   // Mock data
   const labels = ["Total Users", "New Files", "Total Principals", "Total Teachers"];
-  const data = [1234, 456, 28, 160];
+  const data = [allUserItems, allFiles, principalTotal, teachersTotal];
+
+  // Fetch All users
+   useEffect(()=>{
+    const fetchAllUsers = async ()=>{
+      try {
+        const response = await getAllUsers();
+        setIsUserItems(response.data);
+        const responseTeachers = await getAllUsersTeachers();
+        setIsUserItemsTeachers(responseTeachers.data);
+        const getFiles = await getAllFiles();
+        setFiles(getFiles);
+      } catch (error) {
+        console.error('Failed to fetch data or error!', error);
+        throw error;
+      }
+    }
+  
+    fetchAllUsers();
+  
+   },[]);
+  
 
   // Chart.js data
   const chartData = {

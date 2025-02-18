@@ -3,7 +3,38 @@ import mongoose, { Schema } from "mongoose";
 const adminSchema = new Schema({
     username: { type: String, requred: true },
     password: { type: String, required: true },
-    email: { type: String, required: true }
+    email: { type: String, required: true },
+      school: { type: String, required: true },
+      fullname: { type: String, required: true },
+      contact: { type: String, default: null },
+      // Profile
+      filename: {
+        type: String,
+        default: null,
+      },
+      fileType: {
+        type: String,
+        default: null,
+        enum: ['image'],
+      },
+      mimetype: {
+        type: String,
+        default: null,
+      },
+      size: {
+        type: Number,
+        default: null,
+      },
+      uploadDate: {
+        type: Date,
+        default: Date.now,
+      },
+      metadata: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {},
+      },
+}, {
+  timestamps: true,
 });
 
 const announcementSchema = new Schema({

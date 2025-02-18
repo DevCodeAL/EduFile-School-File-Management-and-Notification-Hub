@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { fetchAllNews } from "../Services/ItemServices";
+import { deleteNews, fetchAllNews } from "../Services/ItemServices";
 import NewsModal from "../Modal/NewsModal";
+import NewsUpdate from "../Modal/UpdateModal/NewsUpdates";
+import NewsDeleteModal from "../Modal/DeleteModal/NewsDeleteModal";
 
 export default function AdminNews(){
       const [isOpen, setIsOpen] = useState(false);
       const [selectednewItem, setSelectednewItem] = useState(false);
+      const [isOpenNews, setIsOpenNews] = useState(false);
+      const [selectedUpdateNews, setIsSelectedUpdateNews] = useState(null);
+      const [isOpenDeletModal, setIsOpenDeleteModal] = useState(false);
+      const [selectedDeleteNews, setIsSeletedNews] = useState(null);
       const [news, setIsNews] = useState([]);
       const [formData, setFormData] = useState({
         title: "",
@@ -14,21 +20,19 @@ export default function AdminNews(){
         files: [],
       });
 
-  // Fetch news Files
-      useEffect(()=>{
-       const fetchNewFiles = async ()=>{
+      const fetchNewFiles = async ()=>{
         try {
           const response = await fetchAllNews();
           setIsNews(response.data);
-          console.log('Data: ', response.data);
         } catch (error) {
           console.error('No files exist!', error);
           throw error;
         }
        };
 
+  // Fetch news Files
+      useEffect(()=>{
        fetchNewFiles();
-
       }, []);
 
     
@@ -67,6 +71,8 @@ export default function AdminNews(){
       
           setFormData({ title: "", date: "", message: "", files: [] }); // Reset state
           console.log(response);
+          fetchNewFiles();
+          setIsOpen(false);
         } catch (error) {
           console.error("Failed to create newItem", error);
         }
@@ -96,6 +102,23 @@ export default function AdminNews(){
       );
     }
     return null;
+  };
+
+  // Handle Update
+  const HandleUpdate = (newItem)=>{
+    setIsSelectedUpdateNews(newItem);
+    setIsOpenNews(true);
+  };
+
+  // Handle Delete
+  const HandleDelete = async (newItem)=> {
+      try{
+        await deleteNews(newItem._id);
+        setIsNews((prevData)=> prevData.filter((t)=> t._id !== newItem._id));
+      }catch(error){
+        console.error('No delete news!', error);
+        throw error;
+      }
   };
       
   
@@ -208,10 +231,13 @@ export default function AdminNews(){
                 
                 {/* Edit & Delete Buttons - Shown on Hover */}
                 <div className="hidden group-hover:flex flex-col absolute right-0 top-8 bg-white shadow-lg border border-gray-200 rounded-lg w-28 p-2 z-10">
-                    <button className="flex items-center gap-2 text-gray-700 hover:text-blue-600 p-2 w-full text-sm">
+                    <button onClick={()=> HandleUpdate(newItem)} className="flex items-center gap-2 text-gray-700 hover:text-blue-600 p-2 w-full text-sm">
                     ✏️ Edit
                     </button>
-                    <button className="flex items-center gap-2 text-gray-700 hover:text-red-600 p-2 w-full text-sm">
+                    <button onClick={()=>{
+                      setIsSeletedNews(newItem);
+                      setIsOpenDeleteModal(true);
+                    }} className="flex items-center gap-2 text-gray-700 hover:text-red-600 p-2 w-full text-sm">
                     🗑️ Delete
                     </button>
                 </div>
@@ -270,10 +296,35 @@ export default function AdminNews(){
       onClose={() => setSelectednewItem(null)}
     />
   )}
-</div>
 
-                 </main>
-               </div>
-        </>
+  {/* News Updates Modal */}
+  {isOpenNews && 
+    <NewsUpdate 
+    isOpenNews={isOpenNews}
+    isCloseNews={()=> setIsOpenNews(false)}
+    newItem={selectedUpdateNews}
+    onUpdate={(updateData)=> {
+      setIsNews((prevData)=> prevData.map((t)=> t._id === updateData._id ? updateData : t));
+      fetchNewFiles();
+    }}
+    />
+  }
+
+  {/* News delete Modal */}
+  {isOpenDeletModal && 
+     <NewsDeleteModal
+      isOpen={isOpenDeletModal}
+      onClose={()=> setIsOpenDeleteModal(false)}
+      newItem={selectedDeleteNews}
+      onConfirm={()=> {
+        HandleDelete(selectedDeleteNews);
+        fetchNewFiles();
+      }}
+      />
+  }
+</div>
+  </main>
+</div>
+</>
     )
 }

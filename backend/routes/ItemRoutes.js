@@ -65,6 +65,90 @@ router.post('/principal', async (req, res)=> {
             }
 });
 
+// Admin Update profile
+router.put('/admin-update-profile/:userId', uploadProfile.single('picture'), async(req, res)=>{
+  const { fullname, email, contact, school } = req.body;
+ const { userId } = req.params;
+ console.log('Incoming parameter', req.params);
+  try {
+      
+       const { originalname, mimetype, size, path } = req.file;
+
+       const getFileType = (mimetype)=>{
+          if(mimetype.startsWith("image")) return "image";
+          if(mimetype === null) return "unknown";
+        };
+
+       const fileType = getFileType(mimetype);
+        if(fileType === "unknown"){
+           return res.status(401).json({message: "Unsupported File!"});
+        };
+
+        const userItem = await AdminUser.findByIdAndUpdate(userId, {
+          fullname, email, contact , school
+        })
+
+        if(!userItem){
+          return res.status(400).json({message: 'No userId exist'});
+        };
+
+        
+         // Update fields only if they are provided
+      if (fullname) userItem.fullname = fullname;
+      if (email) userItem.email = email;
+      if (contact) userItem.contact = contact;
+      if(school) userItem.school = school;
+
+      const fileData = {originalname, mimetype, size, metadata: { path }};
+
+      // Update file details if a file was uploaded
+      if (req.file) {
+          userItem.originalname = fileData.originalname;
+          userItem.mimetype = fileData.mimetype;
+          userItem.size = fileData.size;
+          userItem.metadata = fileData.metadata;
+      }
+
+        await userItem.save();
+
+        res.status(200).json({Message: "Successfully Updated"});
+      
+      } catch (error) {
+          res.status(500).json({error: error.message});
+      }
+});
+
+// Get All Principal user and Teachers this is for Administrator Dashboard
+router.get('/all-users', async (req, res)=>{
+  try {
+    const getAllusers = await PrincipalItems.find();
+
+    
+    if(!getAllusers){
+      return res.status(400).json({message: 'No principal items exist!'});
+    };
+
+    res.status(200).json({message: 'Successfully get all users', data: getAllusers});
+  } catch (error) {
+    console.error('Failed to fetch users!', error);
+  }
+});
+
+// Get All Principal user and Teachers this is for Administrator Dashboard
+router.get('/all-users-teachers', async (req, res)=>{
+  try {
+    const getAllusers = await Teacher.find();
+    if(!getAllusers){
+      return res.status(400).json({message: 'No principal items exist!'});
+    };
+
+    res.status(200).json({message: 'Successfully get all users', data: getAllusers});
+  } catch (error) {
+    console.error('Failed to fetch users!', error);
+  }
+});
+
+
 //  Profile Update
 router.put('/userprofile/:userId', uploadProfile.single('picture'), async(req, res)=>{
     const { fullname, email, contact, role } = req.body;
@@ -1064,69 +1148,247 @@ router.delete('/announcementDelete/:id', async (req, res)=>{
 
 // ---------------------------------------------------------------------------------------
 // Update Anouncement for Admin Dashboard
-router.put('/update-announcement-admin', async (req, res)=>{
-  const { updateId } = req.params;
-  
+router.put(
+  "/update-announcement-admin/:updateId",
+  uploadAnnouncementFile.array("files", 10),
+  async (req, res) => {
+    const { updateId } = req.params;
+    const { title, date, message, } = req.body;
+
     try {
+      console.log("Received files:", req.files); 
+      console.log("Incoming data:", req.body); 
+      // Check if files exist
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ message: "No incoming files" });
+      }
 
-      const updateData = req.body;
-
-      const newAnnouncement = await AnnouncementFiles.findByIdAndUpdate(updateId, updateData);
-
-      if(!newAnnouncement){
-        return res.status(400).json({message: 'No Announcement exist'});
+      // Get file type
+      const getfileType = (mimetype) => {
+        if (mimetype.startsWith("image/")) return "image";
+        if (mimetype.startsWith("video/")) return "video";
+        return "unknown";
       };
-      
 
-      res.status(200).json({ message: 'Succefully Updated Annoucements!', data: newAnnouncement });
+      // Process file data
+      const fileData = req.files.map((file) => {
+        const { originalname, mimetype, size, path } = file;
+        const fileType = getfileType(mimetype);
+
+        if (fileType === "unknown") {
+          throw new Error(`Unsupported file type: ${originalname}`);
+        }
+
+        return {
+          filename: originalname,
+          fileType,
+          mimetype,
+          size,
+          metadata: { path },
+        };
+      });
+
+     // Update the announcement and **replace** the existing files
+     const newAnnouncement = await AnnouncementFiles.findByIdAndUpdate(
+      updateId,
+      { $set: {title, date, message, files: fileData } },
+      { new: true }
+    );
+
+
+      if (!newAnnouncement) {
+        return res.status(404).json({ message: "Announcement not found" });
+      }
+
+      res.status(200).json({
+        message: "Successfully updated announcement!",
+        data: newAnnouncement,
+      });
     } catch (error) {
-      
+      console.error("Error updating announcement:", error);
+      res.status(500).json({ message: "Internal server error", error: error.message });
     }
-});
+  }
+);
+
 
 // Delete Announcement for Admin Dashboard
-router.delete('/announcement-delete', async (req, res)=>{
+router.delete('/anouncement-delete-admin/:id', async (req, res)=>{
+  const { id } = req.params;
+  const { deleteItem } = req.body;
       try {
+        const findItem = await AnnouncementFiles.findOneAndDelete(id, deleteItem);
         
+        if(!findItem){
+          return res.status(400).json({message: 'No find item to delete!'});
+        }
+
+        res.status(200).json(findItem);
+
       } catch (error) {
-        
+        console.error("Error delete announcement:", error);
+        res.status(500).json({ message: "Internal server error", error: error.message });
       }
 });
 
 // Update Events for Admin Dashboard
-router.put('/update-events-admin', async (req, res)=>{
-  try {
-
-  } catch (error) {
+router.put('/update-events-admin/:updateId',uploadEventFile.array('files', 10), async (req, res)=>{
+  const { updateId } = req.params;
+    const { title, date, message, } = req.body;
     
-  }
+    try {
+      console.log("Received files:", req.files); 
+      console.log("Incoming data:", req.body); 
+      // Check if files exist
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ message: "No incoming files" });
+      }
+
+      // Get file type
+      const getfileType = (mimetype) => {
+        if (mimetype.startsWith("image/")) return "image";
+        if (mimetype.startsWith("video/")) return "video";
+        return "unknown";
+      };
+
+      // Process file data
+      const fileData = req.files.map((file) => {
+        const { originalname, mimetype, size, path } = file;
+        const fileType = getfileType(mimetype);
+
+        if (fileType === "unknown") {
+          throw new Error(`Unsupported file type: ${originalname}`);
+        }
+
+        return {
+          filename: originalname,
+          fileType,
+          mimetype,
+          size,
+          metadata: { path },
+        };
+      });
+
+     // Update the announcement and **replace** the existing files
+     const newNewsItem = await EventsFilesSchema.findByIdAndUpdate(
+      updateId,
+      { $set: {title, date, message, files: fileData } },
+      { new: true }
+    );
+
+
+      if (!newNewsItem) {
+        return res.status(404).json({ message: "Announcement not found" });
+      }
+
+      res.status(200).json({
+        message: "Successfully updated announcement!",
+        data: newNewsItem,
+      });
+
+    } catch (error) {
+      console.error("Error updating announcement:", error);
+      res.status(500).json({ message: "Internal server error", error: error.message });
+    }
 });
 
 // Delete Events for Admin Dashboard
-router.delete('/events-delete', async (req, res)=>{
-  try {
-    
-  } catch (error) {
-    
-  }
+router.delete('/events-delete-admin/:id', async (req, res)=>{
+  const { id } = req.params;
+  const { deleteItem } = req.body;
+      try {
+        const findItem = await EventsFilesSchema.findOneAndDelete(id, deleteItem);
+        
+        if(!findItem){
+          return res.status(400).json({message: 'No find item to delete!'});
+        }
+
+        res.status(200).json(findItem);
+
+      } catch (error) {
+        console.error("Error delete announcement:", error);
+        res.status(500).json({ message: "Internal server error", error: error.message });
+      }
 });
 
 // Update News for Admin Dashboard
-router.put('/update-news-admin', async (req, res)=>{
+router.put('/update-news-admin/:updateId',uploadNewsFile.array('files', 10), async (req, res)=>{
+  const { updateId } = req.params;
+  const { title, date, message, } = req.body;
+  
   try {
+    console.log("Received files:", req.files); 
+    console.log("Incoming data:", req.body); 
+    // Check if files exist
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No incoming files" });
+    }
+
+    // Get file type
+    const getfileType = (mimetype) => {
+      if (mimetype.startsWith("image/")) return "image";
+      if (mimetype.startsWith("video/")) return "video";
+      return "unknown";
+    };
+
+    // Process file data
+    const fileData = req.files.map((file) => {
+      const { originalname, mimetype, size, path } = file;
+      const fileType = getfileType(mimetype);
+
+      if (fileType === "unknown") {
+        throw new Error(`Unsupported file type: ${originalname}`);
+      }
+
+      return {
+        filename: originalname,
+        fileType,
+        mimetype,
+        size,
+        metadata: { path },
+      };
+    });
+
+   // Update the announcement and **replace** the existing files
+   const newNewsItem = await NewsFilesSchema.findByIdAndUpdate(
+    updateId,
+    { $set: {title, date, message, files: fileData } },
+    { new: true }
+  );
+
+
+    if (!newNewsItem) {
+      return res.status(404).json({ message: "Announcement not found" });
+    }
+
+    res.status(200).json({
+      message: "Successfully updated announcement!",
+      data: newNewsItem,
+    });
 
   } catch (error) {
-    
+    console.error("Error updating announcement:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 });
 
 // Delete News for Admin Dashboard
-router.delete('/news-delete', async (req, res)=>{
-  try {
-    
-  } catch (error) {
-    
-  }
+router.delete('/news-delete-admin/:id', async (req, res)=>{
+  const { id } = req.params;
+  const { deleteItem } = req.body;
+      try {
+        const findItem = await NewsFilesSchema.findOneAndDelete(id, deleteItem);
+        
+        if(!findItem){
+          return res.status(400).json({message: 'No find item to delete!'});
+        }
+
+        res.status(200).json(findItem);
+
+      } catch (error) {
+        console.error("Error delete announcement:", error);
+        res.status(500).json({ message: "Internal server error", error: error.message });
+      }
 });
 // ----------------------------------------------------------------------------------------------
 

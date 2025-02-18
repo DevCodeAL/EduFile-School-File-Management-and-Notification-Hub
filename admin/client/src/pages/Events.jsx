@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { fetchAllEvents } from "../Services/ItemServices";
+import { deleteEvents, fetchAllEvents } from "../Services/ItemServices";
 import EventsModal from "../Modal/EventsModal";
+import EventsUpdate from "../Modal/UpdateModal/EventsUpdates";
+import EventDelete from "../Modal/DeleteModal/EventsDeleteModal";
 
 export default function AdminEvents(){
       const [isOpen, setIsOpen] = useState(false);
       const [selectednewItem, setSelectednewItem] = useState(false);
+      const [isEventUpdateOpen, setIsEventUpdateOpen] = useState(false);
+      const [selectedUpdateEvent, setSelectedEventUpdate] = useState(null);
+      const [isOpenDeleteEvent, setIsOpenEventDelete] = useState(false);
+      const [selectedDeleteEvent, setIsSelectedDeleteEvent] = useState(null);
       const [events, setIsNewEvents] = useState([]);
       const [formData, setFormData] = useState({
         title: "",
@@ -14,9 +20,7 @@ export default function AdminEvents(){
         files: [],
       });
 
-  // Fetch events Files
-      useEffect(()=>{
-       const fetchNewFiles = async ()=>{
+      const fetchNewFiles = async ()=>{
         try {
           const response = await fetchAllEvents();
           setIsNewEvents(response.data);
@@ -26,6 +30,10 @@ export default function AdminEvents(){
           throw error;
         }
        };
+
+
+  // Fetch events Files
+      useEffect(()=>{
 
        fetchNewFiles();
 
@@ -67,6 +75,8 @@ export default function AdminEvents(){
       
           setFormData({ title: "", date: "", message: "", files: [] }); // Reset state
           console.log(response);
+          fetchNewFiles();
+          setIsOpen(false);
         } catch (error) {
           console.error("Failed to create newItem", error);
         }
@@ -97,6 +107,23 @@ export default function AdminEvents(){
     }
     return null;
   };
+
+  // Handle Update
+  const HandleUpdate = (newItem)=>{
+    setSelectedEventUpdate(newItem);
+    setIsEventUpdateOpen(true);
+  };
+
+  const HandleDelete = async (newItem)=>{
+    try {
+      await deleteEvents(newItem._id);
+      setIsNewEvents((prevData)=> prevData.filter((t)=> t._id !== newItem._id));
+      setIsOpenEventDelete(false);
+    } catch (error) {
+      console.error('No deleted events!');
+      throw error;
+    }
+  }
       
   
     return(
@@ -208,10 +235,15 @@ export default function AdminEvents(){
                 
                 {/* Edit & Delete Buttons - Shown on Hover */}
                 <div className="hidden group-hover:flex flex-col absolute right-0 top-8 bg-white shadow-lg border border-gray-200 rounded-lg w-28 p-2 z-10">
-                    <button className="flex items-center gap-2 text-gray-700 hover:text-blue-600 p-2 w-full text-sm">
+                    <button onClick={()=> 
+                      HandleUpdate(newItem)
+                    } className="flex items-center gap-2 text-gray-700 hover:text-blue-600 p-2 w-full text-sm">
                     ✏️ Edit
                     </button>
-                    <button className="flex items-center gap-2 text-gray-700 hover:text-red-600 p-2 w-full text-sm">
+                    <button onClick={()=> {
+                      setIsSelectedDeleteEvent(newItem);
+                      setIsOpenEventDelete(true);
+                    }} className="flex items-center gap-2 text-gray-700 hover:text-red-600 p-2 w-full text-sm">
                     🗑️ Delete
                     </button>
                 </div>
@@ -272,10 +304,33 @@ export default function AdminEvents(){
       onClose={() => setSelectednewItem(null)}
     />
   )}
-</div>
 
-    </main>
-  </div>
+  {/* Events Update */}
+  {isEventUpdateOpen && 
+  <EventsUpdate 
+  isOpenEvents={isEventUpdateOpen}
+  isCloseEvents={()=>setIsEventUpdateOpen(false)}
+  newItem={selectedUpdateEvent}
+  onUpdate={(updateData)=> {
+    setIsNewEvents((prevData) => prevData.map((s)=> s._id === updateData._id ? updateData : s));
+    fetchNewFiles();
+  }}
+  />
+  }
+
+  {/* Delete events */}
+ {isOpenDeleteEvent && 
+    <EventDelete isOpen={isOpenDeleteEvent}
+     onClose={()=> setIsOpenEventDelete(false)} 
+     newItem={selectedDeleteEvent}
+     onConfirm={()=>{
+      HandleDelete(selectedDeleteEvent);
+     }}
+    />
+ }
+</div>
+</main>
+</div>
 </>
     )
 }

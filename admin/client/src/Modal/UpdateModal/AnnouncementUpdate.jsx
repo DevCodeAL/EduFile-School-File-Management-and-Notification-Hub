@@ -15,61 +15,84 @@ export default function AnnouncementsUpdate({isOpenAnnouncement, isCloseAnnounce
      if(announcement) setFormData(announcement);
   },[announcement]);
 
+  useEffect(() => {
+    return () => {
+      formData.files.forEach((file) => {
+        if (file instanceof File) {
+          URL.revokeObjectURL(file);
+        }
+      });
+    };
+
+  }, [formData.files]);
+  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const HandleFileChange = (e)=>{
-    const selectedFile = Array.from(e.target.files);
-    setFormData((prev)=> ({
-        ...prev,
-        file: [...prev.files, ...selectedFile],
+  const HandleFileChange = (e) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+  
+    const selectedFiles = Array.from(e.target.files);
+    
+    setFormData((prev) => ({
+      ...prev,
+      files: [...prev.files, ...selectedFiles],
     }));
   };
-
-  const HandleSubmitUpdate = async(e)=>{
-
-    const data = new FormData();
-    data.append('title', formData.title);
-    data.append('date', formData.date);
-    data.append('message', formData.message);
-    formData.files.forEach((file) => data.append("files", file));
-
+  
+  const HandleSubmitUpdate = async (e) => {
     e.preventDefault();
-        try {
-        const response = await createUpdateAnnouncements(announcement._id, formData)
-         onUpdate(response);
-         isCloseAnnouncement();
-        } catch (error) {
-            console.error('Error no announcement update!', error);
-            throw error;
-        }
+  
+    const data = new FormData();
+    data.append("title", formData.title);
+    data.append("date", formData.date);
+    data.append("message", formData.message);
+    formData.files.forEach((file) => data.append("files", file));
+  
+    try {
+      const response = await createUpdateAnnouncements(announcement._id, data);
+      onUpdate(response);
+      isCloseAnnouncement();
+    } catch (error) {
+      console.error("Error updating announcement!", error);
+    }
   };
+  
 
 //   Preview File
-const previewFile = ()=>{
-    if(formData.files.length > 0) {
-     return (
-        <div className="flex flex-wrap gap-2 mt-2">
-            {formData.files.map((file, index)=> {
-                 const fileUrl = URL.createObjectURL(file);
-                 return file.type.startsWith('image/') ? 
-                 (<img key={index} src={fileUrl} alt="Image Preview"/>)
-                  : file.type.startsWith('video/') ?
-                  (<video key={index} src={fileUrl} controls className="w-24 h-24 border shadow-md rounded-md">
-                    Your browser does not support the video tag.
-                  </video>) : 
-                  (<div key={index} className="p-3 border rounded-lg shadow-md bg-white text-center">
-                    <p>Unsupported File</p>
-              </div>)  
-            })}
-        </div>
-     )
-    }
+const previewFile = () => {
+  if (formData.files.length === 0) return null;
 
-    return null;
-}
+  return (
+    <div className="flex flex-wrap gap-2 mt-2">
+      {formData.files.map((file, index) => {
+        if (!(file instanceof File)) return null; // Ensure it's a valid file object
+        
+        const fileUrl = URL.createObjectURL(file);
+
+        return (
+          <div key={index} className="relative">
+            {file.type.startsWith("image/") ? (
+              <img src={fileUrl} alt="Preview" className="w-24 h-24 rounded shadow-md object-cover" />
+            ) : file.type.startsWith("video/") ? (
+              <video src={fileUrl} controls className="w-24 h-24 border shadow-md rounded-md">
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <div className="p-3 border rounded-lg shadow-md bg-white text-center">
+                <p>Unsupported File</p>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 
 
   return (

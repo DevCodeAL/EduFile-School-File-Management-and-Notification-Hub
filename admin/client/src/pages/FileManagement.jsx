@@ -1,67 +1,354 @@
-import { Button } from "flowbite-react";
-import FileDeleteModal from "../Modal/FileModalDelete";
-import { useState } from "react";
-import Header from "../components/Header";
-import ProfileModal from '../Modal/ProfileModal';
+import { useEffect, useState } from "react";
+import { FaFolder, FaFilePdf, FaFileWord, FaFileExcel, FaArrowLeft, FaFilePowerpoint, } from "react-icons/fa";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { getAllFiles } from "../Services/ItemServices";
+import { WebViewerModal } from "../components/WebViewer";
 
-function FileManagement() {
-  const [isdeleteOpenFile, setisDeleteOpenFile] = useState(false);
- const [openProfile, setOpenProfile] = useState(false);
+const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+export default function FileManagement() {
+  const [fileData, setFileData] = useState([]);
+  const [currentFolder, setCurrentFolder] = useState(null);
+  const [breadcrumbs, setBreadcrumbs] = useState([]);
+  const [webOpen, setWebOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isOpenVideo, setIsOpenVideo] = useState(false);
+  const [fileUrl, setFileUrl] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null); // Store the clicked image URL
+  const [selectedVideo, setIsSelectedVideo] = useState(null);
+  // For Update File
+  const [selectedFile, setIsSelectedFile] = useState(null);
+  const [isOpenFileUpdate, setIsOpenFileUpdate] = useState(false);
+
+
+  const transformToFolderStructure = (files) => {
+    const structure = { name: "Learning Record Store (LRS)", subfolders: {} };
+
+    files.forEach((file) => {
+        const { grade, subject, quarter, week, files: fileList } = file;
+
+        if (!structure.subfolders[grade]) 
+            structure.subfolders[grade] = { name: grade, subfolders: {} };
+
+        if (!structure.subfolders[grade].subfolders[subject]) 
+            structure.subfolders[grade].subfolders[subject] = { name: subject, subfolders: {} };
+
+        if (!structure.subfolders[grade].subfolders[subject].subfolders[quarter]) 
+            structure.subfolders[grade].subfolders[subject].subfolders[quarter] = { name: quarter, subfolders: {} };
+
+        if (!structure.subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week]) 
+            structure.subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week] = { name: week, files: [] };
+
+        // Store full file objects instead of only filenames
+        structure.subfolders[grade].subfolders[subject].subfolders[quarter].subfolders[week].files.push(...fileList);
+    });
+
+    return [structure];
+};
+
+
+  useEffect(() => {
+    const fetchAllFiles = async () => {
+      try {
+        const response = await getAllFiles();
+        setFileData(transformToFolderStructure(response));
+      } catch (error) {
+        console.error("Error fetching files:", error);
+      }
+    };
+
+    fetchAllFiles();
+  }, []);
+
+  const navigateTo = (folder) => {
+    setCurrentFolder(folder);
+    setBreadcrumbs([...breadcrumbs, { name: folder.name, folder }]);
+  };
+
+  const goBack = () => {
+    if (breadcrumbs.length > 0) {
+      const updatedBreadcrumbs = breadcrumbs.slice(0, -1);
+      setCurrentFolder(updatedBreadcrumbs.length > 0 ? updatedBreadcrumbs[updatedBreadcrumbs.length - 1].folder : null);
+      setBreadcrumbs(updatedBreadcrumbs);
+    }
+  };
+
+  const getFileIcon = (file) => {
+  if (!file || typeof file !== "object") {
+    console.warn("Invalid file object:", file);
+    return <p className="text-gray-500">Invalid File</p>;
+  }
+
+  const fileUrl = file.metadata?.path ? `${VITE_API_BASE_URL}/${file.metadata.path}` : null;
+  const fileType = file?.mimetype;
+  const fileName = file?.filename || "Unknown File";
+
+  if (fileName.endsWith(".pdf")) return <FaFilePdf className="text-red-500 w-6 h-6" />;
+  if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) return <FaFileWord className="text-blue-500 w-6 h-6" />;
+  if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx")) return <FaFileExcel className="text-green-500 w-6 h-6" />;
+  if (fileName.endsWith(".pptx") || fileName.endsWith(".ppt")) return <FaFilePowerpoint className="text-red-500 w-6 h-6" />;
+
+  if (fileType?.startsWith("video/") && fileUrl) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-100">
-        {openProfile && <ProfileModal setClose={()=> setOpenProfile(!true)}/>}
-      {/* Main Content */}
-      <main className="flex-1 p-6 ml-64">
-       {/* Header */}
-       <h1 className="text-2xl font-bold text-gray-700">File Management</h1>
-       <Header setClose={()=> setOpenProfile(true)}/>
-
-        <FileDeleteModal isdeleteOpenFile={isdeleteOpenFile} setisDeleteOpenFile={()=> setisDeleteOpenFile(!true)}/>
-
-        <div className="p-6">
-      {/* View Files Section */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-600 mb-4">View Files</h2>
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          <table className="table-auto w-full">
-            <thead className="bg-gray-200 text-gray-600 text-sm uppercase">
-              <tr>
-                <th className="px-4 py-2">File Name</th>
-                <th className="px-4 py-2">Type</th>
-                <th className="px-4 py-2">Uploaded By</th>
-                <th className="px-4 py-2">Role</th>
-                <th className="px-4 py-2">School</th>
-                <th className="px-4 py-2">Date</th>
-                <th className="px-4 py-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* Placeholder rows */}
-              {Array.from({ length: 3 }).map((_, index) => (
-                <tr key={index} className="text-gray-700">
-                  <td className="border px-4 py-2">File_{index + 1}.pdf</td>
-                  <td className="border px-4 py-2">PDF</td>
-                  <td className="border px-4 py-2">User {index + 1}</td>
-                  <td className="border px-4 py-2">Principal {index + 1}</td>
-                  <td className="border px-4 py-2">CRT</td>
-                  <td className="border px-4 py-2">2025-01-22</td>
-                  <td className="border px-4 py-2 flex space-x-2">
-                    <Button className="text-blue-500 hover:underline">View</Button>
-                    <Button onClick={()=> setisDeleteOpenFile(true)} className="text-red-500 hover:underline">Delete</Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div>
+         <div
+          onClick={() => { 
+            setIsOpenVideo(true)
+            setIsSelectedVideo(fileUrl);
+          }}
+         className="cursor-pointer w-full h-40 rounded overflow-hidden">
+          <video controls className="w-full h-40 rounded">
+            <source src={fileUrl} type={fileType} />
+            Your browser does not support the video tag.
+          </video>
       </div>
-    </div>
-      
-        </main>
-        </div>
+
+      {isOpenVideo && (
+          <div 
+          className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-50">
+            <div className="relative rounded-lg shadow-lg max-w-2xl">
+              {/* Close Button */}
+              <button
+                className="absolute z-10 top-2 right-2 p-2 bg-gray-200 rounded-full text-gray-700 hover:bg-red-500 hover:text-white transition-all duration-300 shadow-md"
+                onClick={() => setIsOpenVideo(false)}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+              {/* Full Video */}
+              <video controls className="w-full h-auto rounded-lg">
+                <source src={selectedVideo} type={fileType} />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        )}
+      </div>
     );
   }
+
+    // Image files (✅ Fixed return statement)
+    if (fileType?.startsWith("image/") && fileUrl) {
+      return (
+        <div>
+        {/* Clickable Image */}
+        <div
+          className="cursor-pointer w-full h-40 rounded overflow-hidden"
+          onClick={() => { 
+            setIsOpen(true)
+            setSelectedImage(fileUrl);
+          }}
+        >
+          <img
+            src={fileUrl}
+            alt="Image"
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+          {/* Modal */}
+          {isOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-50">
+            <div className="relative rounded-lg shadow-lg max-w-2xl">
+              {/* Close Button */}
+              <button
+                className="absolute top-2 right-2 p-2 bg-gray-200 rounded-full text-gray-700 hover:bg-red-500 hover:text-white transition-all duration-300 shadow-md"
+                onClick={() => setIsOpen(false)}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+              {/* Full Image */}
+              <img
+                src={selectedImage}
+                alt="Full Size"
+                className="w-full h-auto rounded-lg"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+      )
+    }
   
-  export default FileManagement;
-  
+    return <p className="text-gray-500">Unsupported File Type</p>;
+};
+
+
+// Web viewer modal
+const handleOpenViewer = (file) => {
+  const fileUrl = `${VITE_API_BASE_URL}/${file.metadata?.path}`;
+  const fileType = file?.mimetype;
+
+  if (!file.metadata?.path) {
+    console.error("File URL not found.");
+    return;
+  }
+
+  if (fileType.startsWith("video")) {
+    console.log("Video files cannot be opened in viewer.");
+    return; // Prevent modal from opening for videos
+  }
+
+  if (fileType.startsWith("image")) {
+    console.log("Image files cannot be opened in viewer.");
+    return; // Prevent modal from opening for image
+  }
+
+  setFileUrl(fileUrl);
+  setWebOpen(true);
+};
+
+// Creat a function for Updates Files
+const HandleFileUpdate = (file)=> {
+    setIsSelectedFile(file);
+    setIsOpenFileUpdate(false);
+};
+
+  return (
+    <div className="flex flex-col min-h-screen bg-gray-100">
+      <main className="flex-1 p-6 ml-64">
+      <h1 className="text-2xl font-bold text-gray-700 mb-4">📁  File Management</h1>
+        {/* Breadcrumb Navigation */}
+        <div className="flex items-center mb-4">
+          {breadcrumbs.length > 0 && (
+            <button
+              onClick={goBack}
+              className="flex items-center gap-2 text-blue-500 hover:underline"
+            >
+              <FaArrowLeft /> Back
+            </button>
+          )}
+          <h2 className="text-lg font-semibold ml-4">
+            {currentFolder ? currentFolder.name : "Root"}
+          </h2>
+        </div>
+
+        {/* Breadcrumb Links */}
+        <div className="flex space-x-2 mb-4 text-sm text-gray-500">
+          <button className="hover:underline" onClick={() => {
+            setCurrentFolder(null);
+            setBreadcrumbs([]);
+          }}>
+            Root
+          </button>
+          {breadcrumbs.map((crumb, index) => (
+            <span key={index} className="flex items-center">
+              <span className="mx-1">/</span>
+              <button
+                className="hover:underline"
+                onClick={() => {
+                  setCurrentFolder(crumb.folder);
+                  setBreadcrumbs(breadcrumbs.slice(0, index + 1));
+                }}
+              >
+                {crumb.name}
+              </button>
+            </span>
+          ))}
+        </div>
+
+        {/* Grid View */}
+        <div className="grid grid-cols-3 gap-4">
+          {!currentFolder &&
+            fileData.map((folder, index) => (
+              <div
+                key={index}
+                className="flex flex-col items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-200"
+                onClick={() => navigateTo(folder)}
+              >
+                <FaFolder className="text-yellow-400 w-12 h-12" />
+                <p className="mt-2 text-center">{folder.name}</p>
+              </div>
+            ))}
+
+          {currentFolder?.subfolders &&
+            Object.values(currentFolder.subfolders).map((folder, index) => (
+              <div
+                key={index}
+                className="flex flex-col items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-200"
+                onClick={() => navigateTo(folder)}
+              >
+                <FaFolder className="text-yellow-400 w-12 h-12" />
+                <p className="mt-2 text-center">{folder.name}</p>
+              </div>
+            ))}
+
+      {currentFolder?.files?.toReversed().map((file, index) => (
+        <div
+          key={index}
+          className="flex flex-col items-center p-4 pt-7 border rounded-lg bg-white shadow-md hover:bg-gray-100 transition-all duration-300 relative"
+          onClick={() => handleOpenViewer(file)}
+        >
+        {/* Options for Update and Delete */}
+        <div className="group absolute -top-4 right-3">
+          <span className="p-2 cursor-pointer text-gray-600 hover:text-gray-900">
+            <BsThreeDotsVertical />
+          </span>
+
+          {/* Tooltip & Buttons (Visible on Hover) */}
+          <div className="hidden group-hover:flex flex-col absolute right-0 top-6 bg-white shadow-lg border border-gray-200 rounded-lg w-28 p-2 z-10">
+            <button 
+              className="flex items-center gap-2 text-gray-700 hover:text-blue-600 p-2 w-full text-sm"
+              onClick={()=> {
+                HandleFileUpdate(file);
+                setIsOpenFileUpdate(true);
+              }}
+            >
+              ✏️ Edit
+            </button>
+            <button 
+              className="flex items-center gap-2 text-gray-700 hover:text-red-600 p-2 w-full text-sm"
+              onClick={null}>
+              🗑️ Delete
+            </button>
+          </div>
+        </div>
+
+                {/* File Icon / Preview */}
+                {getFileIcon(file)}
+
+                {/* File Details */}
+                <div className="mt-2 text-center w-full px-3">
+                  <p className="text-sm font-semibold text-gray-800 truncate">
+                    {file?.filename || "Filename Missing"}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                    {file?.description || "No Description Available"}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    📅 {new Date(file?.uploadDate).toLocaleString() || "Unknown Time"}
+                  </p>
+                </div>
+              </div>
+            ))}
+        </div>
+      </main>
+
+      {/* Web Viewer Modal */}
+      {webOpen && fileUrl && (
+          <WebViewerModal
+            fileUrl={fileUrl}
+            FileName={fileUrl.split('/').pop()} // Extract filename from URL
+            WebViewerOpen={webOpen}
+            WebViewerClose={() => setWebOpen(false)}
+          />
+        )}
+
+        {isOpenFileUpdate && (
+          <LearningMaterialsUpdate 
+          isOpenFileUpdates={isOpenFileUpdate} 
+          onCloseFileUpate={
+            ()=> setIsOpenFileUpdate(false)
+          }
+          file={selectedFile}
+          onUpdate={(updatedFile)=> 
+            setIsSelectedFile(previewFile => 
+              previewFile.map((t)=> t._id === updatedFile._id ? updatedFile: t ))}
+
+            
+          />
+        )}
+    </div>
+  );
+}

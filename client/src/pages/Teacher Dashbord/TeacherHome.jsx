@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import Header from "../../components/Header";
 import ProfileModal from "../../components/Profile";
+import Analytics from "./Analytics";
+import { FaFolderOpen, FaCalendarAlt, FaBullhorn } from "react-icons/fa";
 
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -73,30 +75,36 @@ export default function TeacherDashboard() {
 
         {/* Dashboard Sections */}
         <main className="p-6">
-          <div className="grid grid-cols-3 gap-6">
-            {/* Recent Uploads */}
-            <div className="bg-white shadow-md p-4 rounded-lg">
-              <h2 className="text-lg font-semibold text-gray-700">
-                📁 Recent Uploads
-              </h2>
-              <p className="text-sm text-gray-600 mt-2">No new files uploaded.</p>
-            </div>
-
-            {/* Schedule */}
-            <div className="bg-white shadow-md p-4 rounded-lg">
-              <h2 className="text-lg font-semibold text-gray-700">📅 Schedule</h2>
-              <p className="text-sm text-gray-600 mt-2">Upcoming meetings appear here.</p>
-            </div>
-
-            {/* Announcements */}
-            <div className="bg-white shadow-md p-4 rounded-lg">
-              <h2 className="text-lg font-semibold text-gray-700">
-                📢 Announcements
-              </h2>
-              <p className="text-sm text-gray-600 mt-2">No new announcements.</p>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Recent Uploads */}
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg p-6 rounded-xl flex items-center space-x-4">
+          <FaFolderOpen size={40} className="text-white" />
+          <div>
+            <h2 className="text-lg font-semibold">Recent Uploads</h2>
+            <p className="text-sm mt-2">No new files uploaded.</p>
           </div>
-        </main>
+        </div>
+
+        {/* Schedule */}
+        <div className="bg-gradient-to-r from-green-500 to-teal-600 text-white shadow-lg p-6 rounded-xl flex items-center space-x-4">
+          <FaCalendarAlt size={40} className="text-white" />
+          <div>
+            <h2 className="text-lg font-semibold">Schedule</h2>
+            <p className="text-sm mt-2">Upcoming meetings appear here.</p>
+          </div>
+        </div>
+
+        {/* Announcements */}
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg p-6 rounded-xl flex items-center space-x-4">
+          <FaBullhorn size={40} className="text-white" />
+          <div>
+            <h2 className="text-lg font-semibold">Announcements</h2>
+            <p className="text-sm mt-2">No new announcements.</p>
+          </div>
+        </div>
+      </div>
+      <Analytics />
+    </main>
 
         {isOpen && <ProfileModal setClose={() => setOpen(false)} />}
       </div>

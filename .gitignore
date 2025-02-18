@@ -1,4 +1,4 @@
 # Environment variables
 backend/.env
 client/.env
-admin/client/.env
+admin/.env

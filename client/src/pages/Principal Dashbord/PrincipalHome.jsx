@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaFilePdf, FaFileWord, FaFileExcel, FaFilePowerpoint } from "react-icons/fa";
+import { FaUserTie, FaClipboardList, FaFileAlt, FaUpload } from "react-icons/fa";
+import { FaEye, FaExchangeAlt, FaTrash } from "react-icons/fa";
 import Header from "../../components/Header";
 import ProfileModal from "../../components/Profile";
 import UploadLoading from "../../Success/UploadLoading";
@@ -317,35 +319,47 @@ const HandleDeleteByTeachers = async (item)=>{
            <UploadLoading/>
        )}
 
-        {/* Stats Section */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white shadow-lg rounded-lg p-4">
-            <h2 className="text-gray-500 text-sm">Total Teachers</h2>
-            <p className="text-2xl font-bold text-blue-500">{isSpecificUser.length}</p>
+<section>
+      {/* Stats Section */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-xl rounded-lg p-6 flex items-center space-x-4">
+          <FaUserTie size={40} className="text-white" />
+          <div>
+            <h2 className="text-sm font-semibold">Total Teachers</h2>
+            <p className="text-3xl font-bold">{isSpecificUser.length}</p>
           </div>
-          <div className="bg-white shadow-lg rounded-lg p-4">
-            <h2 className="text-gray-500 text-sm">Pending Applications</h2>
-            <p className="text-2xl font-bold text-orange-500">{pending.length}</p>
+        </div>
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-xl rounded-lg p-6 flex items-center space-x-4">
+          <FaClipboardList size={40} className="text-white" />
+          <div>
+            <h2 className="text-sm font-semibold">Pending Applications</h2>
+            <p className="text-3xl font-bold">{pending.length}</p>
           </div>
-          <div className="bg-white shadow-lg rounded-lg p-4">
-            <h2 className="text-gray-500 text-sm">Files Uploaded</h2>
-            <p className="text-2xl font-bold text-green-500">{files.length}</p>
+        </div>
+        <div className="bg-gradient-to-r from-green-500 to-teal-600 text-white shadow-xl rounded-lg p-6 flex items-center space-x-4">
+          <FaFileAlt size={40} className="text-white" />
+          <div>
+            <h2 className="text-sm font-semibold">Files Uploaded</h2>
+            <p className="text-3xl font-bold">{files.length}</p>
           </div>
-        </section>
+        </div>
+      </section>
 
-       {/* Upload Files Section */}
-        <section
-          id="upload"
-          className="flex flex-col items-center justify-center border-dashed border-2 border-gray-300 mt-8 bg-white shadow-lg rounded-lg p-6 "
+      {/* Upload Files Section */}
+      <section
+        id="upload"
+        className="flex flex-col items-center justify-center border-dashed border-2 border-gray-300 mt-8 bg-white shadow-lg rounded-lg p-6"
+      >
+        <h2 className="text-lg font-bold text-gray-700 mb-4">Upload Files</h2>
+        <button
+          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-lg font-semibold flex items-center space-x-2"
+          onClick={() => setFormOpen(true)}
         >
-          <h2 className="text-lg font-bold text-gray-700 mb-4">Upload Files</h2>
-          <button
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-lg font-semibold"
-            onClick={() => setFormOpen(true)}
-          >
-            Add New File
-          </button>
-        </section>
+          <FaUpload size={20} className="text-white" />
+          <span>Add New File</span>
+        </button>
+      </section>
+    </section>
 
 
         {/* Form Modal */}
@@ -707,25 +721,32 @@ const HandleDeleteByTeachers = async (item)=>{
               <td className="px-4 py-4 border-b text-green-500 font-semibold">Active</td>
               <td className="px-4 py-4 border-b">
                 <div className="flex flex-wrap justify-center gap-2">
-                  <button 
-                    onClick={() => {
-                      setOpenProfile(true);
-                      setSelectedUser(item);
-                    }}
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition"
-                  >
-                    View
-                  </button>
+                <button
+        onClick={() => {
+          setOpenProfile(true);
+          setSelectedUser(item);
+        }}
+        className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition flex items-center space-x-2"
+      >
+        <FaEye size={16} />
+        <span>View</span>
+      </button>
 
-                  <button 
-                    onClick={() => {
-                      setIsSelectedByTeachers(item);
-                      setIsModalDeleteTeacher(true);
-                    }}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
-                  >
-                    Delete
-                  </button>
+      <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition flex items-center space-x-2">
+        <FaExchangeAlt size={16} />
+        <span>Transfer To</span>
+      </button>
+
+      <button
+        onClick={() => {
+          setIsSelectedByTeachers(item);
+          setIsModalDeleteTeacher(true);
+        }}
+        className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition flex items-center space-x-2"
+      >
+        <FaTrash size={16} />
+        <span>Delete</span>
+      </button>
                 </div>
               </td>
             </tr>

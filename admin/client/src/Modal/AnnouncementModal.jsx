@@ -23,20 +23,40 @@ export default function AnnouncementModal({ announcement, onClose }) {
           📅 {announcement.date} | ⏰ {announcement.time}
         </p>
         <div className="text-gray-700 whitespace-pre-line">
-        {announcement.files.map((file, index)=>
-             (file.metadata.path) ? (
-              <img
+        {announcement.files.map((file, index)=> {
+            if(file?.fileType.startsWith('image')){
+              return(
+                file?.metadata.path && (
+                  <img
               key={index} 
-              className={`rounded-lg object-cover w-1/3 inline-block mx-4 my-4`}
+              className={`rounded-lg object-cover ${announcement.files.length === 1 ? 'max-w-lg h-auto' : ' mx-4 my-4 w-1/3 inline-block'}`}
               src={`http://localhost:5000/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
               alt={`Image ${index + 1}`}
             />
-             ): (
-              <div key={index} className="w-full h-32 bg-gray-300 flex justify-center items-center rounded-lg">
+                )
+              );
+            } else if(file?.fileType.startsWith('video')){
+              return (
+                file?.metadata.path && (
+                  <video
+                      key={index}
+                      className={`rounded-lg object-cover ${
+                        announcement.files.length === 1 ? "w-1/2 h-auto" : "h-32 w-full"
+                      }`}
+                      controls
+                      src={`http://localhost:5000/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
+                      alt={`Video ${index + 1}`}
+                    />
+                )
+              )
+            } else {
+              return (
+                <div key={index} className="w-full h-32 bg-gray-300 flex justify-center items-center rounded-lg">
                 <span>No Image</span>
               </div>
-            )
-            )}
+              )
+            }
+        })};
           <Markdown>
             {announcement.message}
             </Markdown>

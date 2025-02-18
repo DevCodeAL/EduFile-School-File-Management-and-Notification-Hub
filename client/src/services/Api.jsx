@@ -319,3 +319,28 @@ export const fetchAllEvents = async ()=>{
     throw error;
   }
 };
+
+// Get All Users
+const API_All_Users = `http://localhost:5000/api/all-users`;
+export const getAllUsers = async()=>{
+  try {
+    const response = await axios.get(API_All_Users);
+    return response.data;
+  } catch (error) {
+    console.error("No fetch users", error);
+    throw error;
+  }
+};
+
+// Get All teachers 
+// all-users-teachers
+const API_All_Users_T = `http://localhost:5000/api/all-users-teachers`;
+export const getAllUsersTeachers = async()=>{
+  try {
+    const response = await axios.get(API_All_Users_T);
+    return response.data;
+  } catch (error) {
+    console.error("No fetch users", error);
+    throw error;
+  }
+};

@@ -126,7 +126,7 @@ export default function IndexHome() {
 
             {/* Image */}
             {slides.length > 0 && (
-              <div key={slides[currentSlide]._id} className="relative w-full h-full">
+              <div key={slides[currentSlide]._id} className="relative w-full h-full animate-fade-left">
                 {slides[currentSlide].files.map((file, index) => (
                   <img
                     key={index}
@@ -165,8 +165,6 @@ export default function IndexHome() {
           </div>
         </div>
       </section>
-
-
 
       {/* News Section */}
       <section id="news" className="py-16 bg-white">
@@ -237,72 +235,97 @@ export default function IndexHome() {
       </div>
     </section>
 
-     {/* Announcements Section */}
-     <section id="announcements" className="py-16 bg-white">
-      <div className="container mx-auto px-4">
-        {/* Section Title */}
-        <div className="flex justify-center items-center space-x-2 text-blue-700">
-          <FaBullhorn className="text-4xl" />
-          <h2 className="text-4xl font-bold">Announcements</h2>
-        </div>
+    {/* Announcements Section */}
+<section id="announcements" className="py-16 bg-white">
+  <div className="container mx-auto px-4">
+    {/* Section Title */}
+    <div className="flex justify-center items-center space-x-2 text-blue-700">
+      <FaBullhorn className="text-4xl" />
+      <h2 className="text-4xl font-bold">Announcements</h2>
+    </div>
 
-        {/* Announcements Grid */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {announcements.map((announcement) => {
-            const words = announcement.message.split(" ");
-            const isExpanded = expanded[announcement._id];
-            const displayMessage = isExpanded ? announcement.message : words.slice(0, 10).join(" ") + (words.length > 50 ? "..." : "");
+    {/* Announcements Grid */}
+    <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {announcements.map((announcement) => {
+        const words = announcement.message.split(" ");
+        const isExpanded = expanded[announcement._id];
+        const displayMessage = isExpanded
+          ? announcement.message
+          : words.slice(0, 10).join(" ") + (words.length > 50 ? "..." : "");
 
-            return (
-              <div
-                key={announcement._id}
-                className="bg-gray-100 p-6 shadow-md rounded-lg hover:shadow-xl transition duration-300"
-              >
-                {/* Title */}
-                <h3 className="text-xl font-semibold text-gray-800">{announcement.title}</h3>
+        return (
+          <div
+            key={announcement._id}
+            className="bg-gray-100 p-6 shadow-md rounded-lg hover:shadow-xl transition duration-300"
+          >
+            {/* Title */}
+            <h3 className="text-xl font-semibold text-gray-800">{announcement.title}</h3>
 
-                {/* Announcement Message */}
-                <p className="text-gray-700 mt-4">{displayMessage}</p>
+            {/* Announcement Message */}
+            <p className="text-gray-700 mt-4">{displayMessage}</p>
 
-                {/* Image Grid */}
-                {announcement.files && announcement.files.length > 0 && (
-                  <div className="mt-4 grid gap-2 grid-cols-1 sm:grid-cols-2">
-                    {announcement.files.slice(0, 3).map((file, index) =>
-                      file?.metadata?.path ? (
+            {/* Image Grid */}
+            {announcement.files && announcement.files.length > 0 && (
+              <div className="mt-4 grid gap-2 grid-cols-1 sm:grid-cols-2">
+                {announcement.files.slice(0, 3).map((file, index) => {
+                  if (file?.fileType.startsWith('image')) {
+                    return (
+                      file?.metadata?.path && (
                         <img
                           key={index}
                           className={`rounded-lg object-cover ${
-                            announcement.files.length === 1 ? "w-full h-auto" : "h-28 w-full"
+                            announcement.files.length === 1 ? "w-full h-auto" : "h-32 w-full"
                           }`}
                           src={`http://localhost:5000/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
                           alt={`Image ${index + 1}`}
                         />
-                      ) : (
-                        <div key={index} className="w-full h-28 bg-gray-300 flex justify-center items-center rounded-lg">
-                          <span>No Image</span>
-                        </div>
                       )
-                    )}
-                    {announcement.files.length > 3 && (
-                      <div className="w-full h-28 bg-gray-300 flex justify-center items-center rounded-lg">
-                        <span className="text-xl font-semibold">+{announcement.files.length - 3}</span>
+                    );
+                  } else if (file?.fileType.startsWith('video')) {
+                    return (
+                      file?.metadata?.path && (
+                        <video
+                          key={index}
+                          className={`rounded-lg object-cover ${
+                            announcement.files.length === 1 ? "w-full h-auto flex" : "h-32 w-full"
+                          }`}
+                          controls
+                          src={`http://localhost:5000/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
+                          alt={`Video ${index + 1}`}
+                        />
+                      )
+                    );
+                  } else {
+                    return (
+                      <div key={index} className="w-full h-28 bg-gray-300 flex justify-center items-center rounded-lg">
+                        <span>No Image</span>
                       </div>
-                    )}
+                    );
+                  }
+                })}
+
+                {announcement.files.length > 3 && (
+                  <div className="w-full h-28 bg-gray-300 flex justify-center items-center rounded-lg">
+                    <span className="text-xl font-semibold">+{announcement.files.length - 3}</span>
                   </div>
                 )}
-                 {/* Read More Button (Always Visible) */}
-                 <button
-                  onClick={() => toggleReadMore(announcement._id)}
-                  className="mt-4 w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
-                >
-                  {isExpanded ? "Read Less" : "Read More"}
-                </button>
               </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
+            )}
+
+            {/* Read More Button (Always Visible) */}
+            <button
+              onClick={() => toggleReadMore(announcement._id)}
+              className="mt-4 w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
+            >
+              {isExpanded ? "Read Less" : "Read More"}
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</section>
+
       {/* Footer */}
       <footer id="contact" className="bg-blue-500 text-white py-6 text-center">
         <p>© {new Date().getFullYear()} Guimba East EduLink. All rights reserved.</p>

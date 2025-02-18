@@ -198,6 +198,7 @@ const handleOpenViewer = (file) => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <main className="flex-1 p-6 ml-64">
+      <h1 className="text-2xl font-bold text-gray-700 mb-4">📁  File Management</h1>
         {/* Breadcrumb Navigation */}
         <div className="flex items-center mb-4">
           {breadcrumbs.length > 0 && (

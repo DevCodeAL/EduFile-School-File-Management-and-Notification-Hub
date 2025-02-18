@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import AnnouncementModal from "../Modal/AnnouncementModal";
-import { fetchAllAnnouncement } from "../Services/ItemServices";
+import { deleteAnnouncement, fetchAllAnnouncement } from "../Services/ItemServices";
 import AnnouncementsUpdate from "../Modal/UpdateModal/AnnouncementUpdate";
+import AnnouncementDelete from "../Modal/DeleteModal/AnouncementDelete";
 
 export default function AdminAnnouncement(){
       const [isOpen, setIsOpen] = useState(false);
       const [selectedAnnouncement, setSelectedAnnouncement] = useState(false);
       const [selectedAnnouncementUpdates, setSelectedAnnouncementUpdates] = useState(false);
       const [isSelectedAnnouncement, setIsSelectedAnnouncement] = useState(null);
+      const [selectedDelete, setIsSelectedDelete] = useState(null);
+      const [isOpenDelete, setIsOpenDelete] = useState(false);
       const [announcements, setAnnouncements] = useState([]);
       const [formData, setFormData] = useState({
         title: "",
@@ -17,9 +20,7 @@ export default function AdminAnnouncement(){
         files: [],
       });
 
-  // Fetch Announcements Files
-      useEffect(()=>{
-       const fetchAnouncemnetFiles = async ()=>{
+      const fetchAnouncemnetFiles = async ()=>{
         try {
           const response = await fetchAllAnnouncement();
           setAnnouncements(response.data);
@@ -29,8 +30,10 @@ export default function AdminAnnouncement(){
         }
        };
 
-       fetchAnouncemnetFiles();
-
+     
+  // Fetch Announcements Files
+      useEffect(()=>{
+        fetchAnouncemnetFiles();
       }, []);
 
     
@@ -66,13 +69,15 @@ export default function AdminAnnouncement(){
             method: "POST",
             body: data,
           });
-      
-          setFormData({ title: "", date: "", message: "", files: [] }); // Reset state
+          setFormData({ title: "", date: "", message: "", files: [] }); 
+          fetchAnouncemnetFiles();
+          setIsOpen(false);
           console.log(response);
         } catch (error) {
           console.error("Failed to create announcement", error);
         }
       };
+      
       
   // File Preview
   const filePreview = () => {
@@ -100,9 +105,24 @@ export default function AdminAnnouncement(){
     return null;
   };
 
+  // Handle Update
   const HandleUpdate = (announcement)=>{
     setIsSelectedAnnouncement(announcement);
     setSelectedAnnouncementUpdates(true);
+  };
+
+  // Handle Delete
+  const HandleDelete = async (announcement)=>{
+      try {
+          await deleteAnnouncement(announcement._id);
+         setAnnouncements((prevData)=>{
+          prevData.filter((t)=> t._id !== announcement._id);
+         });
+         setIsOpenDelete(false);
+      } catch (error) {
+        console.error('No deleted announcements!', error);
+        throw error;
+      }
   };
       
   
@@ -198,11 +218,11 @@ export default function AdminAnnouncement(){
                    )}
            
              {/* Announcements Grid View */}
-<div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-  {announcements.length === 0 ? (
+             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+  {announcements && announcements.length === 0 ? (
     <p className="text-gray-500 text-center col-span-full">No announcements yet.</p>
   ) : (
-    announcements.slice().reverse().map((announcement) => (
+    announcements?.slice().reverse().map((announcement) => (
       <div
         key={announcement._id}
         className="relative bg-white p-4 shadow-md rounded-lg border border-gray-200 transform transition-all scale-95 hover:scale-100"
@@ -212,17 +232,20 @@ export default function AdminAnnouncement(){
           <button className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 p-1">
             <BsThreeDotsVertical />
           </button>
-          
+
           {/* Edit & Delete Buttons - Shown on Hover */}
           <div className="hidden group-hover:flex flex-col absolute right-0 top-8 bg-white shadow-lg border border-gray-200 rounded-lg w-28 p-2 z-10">
-            <button 
-            onClick={()=> 
-              HandleUpdate(announcement)
-            }
-             className="flex items-center gap-2 text-gray-700 hover:text-blue-600 p-2 w-full text-sm">
+            <button
+              onClick={() => HandleUpdate(announcement)}
+              className="flex items-center gap-2 text-gray-700 hover:text-blue-600 p-2 w-full text-sm"
+            >
               ✏️ Edit
             </button>
-            <button className="flex items-center gap-2 text-gray-700 hover:text-red-600 p-2 w-full text-sm">
+            <button onClick={()=> {
+              setIsOpenDelete(true);
+              setIsSelectedDelete(announcement);
+            }} 
+              className="flex items-center gap-2 text-gray-700 hover:text-red-600 p-2 w-full text-sm">
               🗑️ Delete
             </button>
           </div>
@@ -240,35 +263,57 @@ export default function AdminAnnouncement(){
         </p>
 
         {/* Image Grid with Full-Width Single Image */}
-  {announcement.files && announcement.files.length > 0 && (
-  <div className={`mt-3 grid gap-2 ${announcement.files.length === 1 ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"}`}>
-    {announcement.files.slice(0, 3).map((file, index) => (
-      file?.metadata?.path ? (
-        <img
-          key={index}
-          className={`rounded-lg object-cover ${
-            announcement.files.length === 1 ? "w-full h-auto" : "h-32 w-full"
-          }`}
-          src={`http://localhost:5000/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
-          alt={`Image ${index + 1}`}
-        />
-      ) : (
-        <div key={index} className="w-full h-32 bg-gray-300 flex justify-center items-center rounded-lg">
-          <span>No Image</span>
-        </div>
-      )
-    ))}
-    
-    {announcement.files.length > 3 && (
-      <div className="w-full h-32 bg-gray-300 flex justify-center items-center rounded-lg">
-        <span className="text-xl font-semibold">+{announcement.files.length - 3}</span>
-      </div>
-    )}
-  </div>
-)}
+        {announcement.files && announcement.files.length > 0 && (
+          <div
+            className={`mt-3 grid gap-2 ${announcement.files.length === 1 ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"}`}
+          >
+            {announcement.files.slice(0, 3).map((file, index) => {
+              if (file?.fileType.startsWith('image')) {
+                return (
+                  file?.metadata?.path && (
+                    <img
+                      key={index}
+                      className={`rounded-lg object-cover ${
+                        announcement.files.length === 1 ? "w-full h-auto" : "h-32 w-full"
+                      }`}
+                      src={`http://localhost:5000/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
+                      alt={`Image ${index + 1}`}
+                    />
+                  )
+                );
+              } else if (file?.fileType.startsWith('video')) {
+                return (
+                  file?.metadata?.path && (
+                    <video
+                      key={index}
+                      className={`rounded-lg object-cover ${
+                        announcement.files.length === 1 ? "w-full h-auto" : "h-32 w-full"
+                      }`}
+                      controls
+                      src={`http://localhost:5000/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
+                      alt={`Video ${index + 1}`}
+                    />
+                  )
+                );
+              } else {
+                return (
+                  <div key={index} className="w-full h-32 bg-gray-300 flex justify-center items-center rounded-lg">
+                    <span>No Image</span>
+                  </div>
+                );
+              }
+            })}
+
+            {announcement.files.length > 3 && (
+              <div className="w-full h-32 bg-gray-300 flex justify-center items-center rounded-lg">
+                <span className="text-xl font-semibold">+{announcement.files.length - 3}</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Read More Button */}
-        <button className="mt-4 text-blue-500 hover:underline"
-         onClick={()=> setSelectedAnnouncement(announcement)}>
+        <button className="mt-4 text-blue-500 hover:underline" onClick={() => setSelectedAnnouncement(announcement)}>
           Read More
         </button>
       </div>
@@ -276,24 +321,40 @@ export default function AdminAnnouncement(){
   )}
 
   {/* Announcement Modal */}
-  {selectedAnnouncement && (
-    <AnnouncementModal
-      announcement={selectedAnnouncement}
-      onClose={() => setSelectedAnnouncement(null)}
-    />
-  )}
+  {selectedAnnouncement && <AnnouncementModal announcement={selectedAnnouncement}  onClose={()=> setSelectedAnnouncement(false)}/>}
+
 
   {/* Announcement Updates */}
-  {selectedAnnouncementUpdates &&
-   <AnnouncementsUpdate isOpenAnnouncement={selectedAnnouncementUpdates} 
-   announcement={isSelectedAnnouncement}
-   onUpdate={(updateData)=>{
-      setAnnouncements((prevData)=>{
-        prevData.map((t)=> t._id === updateData._id ? updateData : t)
+  {selectedAnnouncementUpdates && (
+  <AnnouncementsUpdate
+    isOpenAnnouncement={selectedAnnouncementUpdates}
+    announcement={isSelectedAnnouncement}
+    onUpdate={(updateData) => {
+      setAnnouncements((prevData) => {
+        return prevData.map((t) => 
+          t._id === updateData._id ? updateData : t
+        );
       });
-   }}
-   isCloseAnnouncement={()=> 
-   setSelectedAnnouncementUpdates(false)}/>}
+
+      fetchAnouncemnetFiles();
+    }}
+    isCloseAnnouncement={() => 
+    setSelectedAnnouncementUpdates(false)}
+  />
+)}
+
+{/* Announcements Delete */}
+{isOpenDelete && 
+  <AnnouncementDelete
+ announcement={selectedDelete}
+ isOpen={isOpenDelete}
+ onClose={()=> setIsOpenDelete(false)}
+ onConfirm={()=> {
+  HandleDelete(selectedDelete); 
+  fetchAnouncemnetFiles();
+ }}
+ />
+}
 </div>
   </main>
 </div>

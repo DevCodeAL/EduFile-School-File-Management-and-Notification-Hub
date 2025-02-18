@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 //Login API for Admin
 const API_Login = `http://localhost:5000/api/admin`;
 export const adminLogin = async (userItem)=> {
@@ -26,6 +27,49 @@ export const getUserAdmin = async (authToken) => {
     throw error;
   }
 };
+
+// Update userProfile
+const UpdateAdminProfile = `${VITE_API_BASE_URL}/api/admin-update-profile`;
+export const updateProfileAPI = async (userId, formData)=>{
+   try {
+    const response = await axios.put(`${UpdateAdminProfile}/${userId}`, formData,{
+      headers: {
+        "Content-Type": "multipart/form-data", 
+      },
+    });
+    return response.data;
+   } catch (error) {
+      console.error("No profile updates", error);
+      throw error;
+   }
+};
+
+// Get All Users
+const API_All_Users = `http://localhost:5000/api/all-users`;
+export const getAllUsers = async()=>{
+  try {
+    const response = await axios.get(API_All_Users);
+    return response.data;
+  } catch (error) {
+    console.error("No fetch users", error);
+    throw error;
+  }
+};
+
+// Get All teachers 
+// all-users-teachers
+const API_All_Users_T = `http://localhost:5000/api/all-users-teachers`;
+export const getAllUsersTeachers = async()=>{
+  try {
+    const response = await axios.get(API_All_Users_T);
+    return response.data;
+  } catch (error) {
+    console.error("No fetch users", error);
+    throw error;
+  }
+};
+
+
 
 // Registration API for Principal
 const API_Principal = `http://localhost:5000/api/principal`;
@@ -78,12 +122,87 @@ export const fetchAllEvents = async ()=>{
 // -----------------------------------------------
 // Update Announcements
 const API_UpdateAnnoucements = `http://localhost:5000/api/update-announcement-admin`;
-export const createUpdateAnnouncements = async (updateId)=>{
+export const createUpdateAnnouncements = async (updateId, data)=>{
   try {
-    const response = await axios.put(`${API_UpdateAnnoucements}/${updateId}`);
+    const response = await axios.put(`${API_UpdateAnnoucements}/${updateId}`, data);
     return response.data;
   } catch (error) {
     console.error('No Updated Announcements', error);
     throw error;
   }
-}
+};
+
+// Delete Announcements
+const API_Delete_Announcement = `http://localhost:5000/api/anouncement-delete-admin`;
+export const deleteAnnouncement =  async (id, deleteItem)=>{
+  try {
+    const response = await axios.delete(`${API_Delete_Announcement}/${id}`, deleteItem);
+    return  response.data;
+  } catch (error) {
+    console.error('No Delete Announcements', error);
+    throw error;
+  }
+};
+
+// Events Update
+const API_UpdateEvents = `http://localhost:5000/api/update-events-admin`;
+export const createUpdateEvents = async (updateId, data)=>{
+  try {
+    const response = await axios.put(`${API_UpdateEvents}/${updateId}`, data);
+    return response.data;
+  } catch (error) {
+    console.error('No Updated Announcements', error);
+    throw error;
+  }
+};
+
+// Delete Events
+const API_Delete_Events = `http://localhost:5000/api/events-delete-admin`;
+export const deleteEvents =  async (id, deleteItem)=>{
+  try {
+    const response = await axios.delete(`${API_Delete_Events}/${id}`, deleteItem);
+    return  response.data;
+  } catch (error) {
+    console.error('No Delete Announcements', error);
+    throw error;
+  }
+};
+
+// Update News 
+const API_UpdateNews = `http://localhost:5000/api/update-news-admin`;
+export const createUpdateNews = async (updateId, data)=>{
+  try {
+    const response = await axios.put(`${API_UpdateNews}/${updateId}`, data);
+    return response.data;
+  } catch (error) {
+    console.error('No Updated Announcements', error);
+    throw error;
+  }
+};
+
+// Delete News
+const API_Delete_News = `http://localhost:5000/api/news-delete-admin`;
+export const deleteNews =  async (id, deleteItem)=>{
+  try {
+    const response = await axios.delete(`${API_Delete_News}/${id}`, deleteItem);
+    return  response.data;
+  } catch (error) {
+    console.error('No Delete Announcements', error);
+    throw error;
+  }
+};
+
+// Get All Upload Files
+const API_Files = `http://localhost:5000/api/file`;
+
+export const getAllFiles = async ()=> {
+    try {
+      const response = await axios.get(API_Files);
+      return response.data;
+    } catch (error) {
+      console.error("No files exist", error);
+      throw error;
+    }
+};
+
+
