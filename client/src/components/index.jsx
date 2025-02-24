@@ -3,6 +3,8 @@ import { FaChevronLeft, FaChevronRight, FaHome, FaNewspaper, FaBullhorn, FaPhone
 import { useNavigate } from "react-router";
 import { fetchAllAnnouncements, fetchAllEvents, fetchAllNews } from "../services/Api";
 
+const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function IndexHome() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slides, setSlides] = useState([]);
@@ -131,7 +133,7 @@ export default function IndexHome() {
                   <img
                     key={index}
                     className="w-full h-full object-center md:object-top rounded-md"
-                    src={`https://edu-file-school-file-management-and-notification-hub.vercel.app/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
+                    src={`${VITE_API_BASE_URL}/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
                     alt="Event"
                   />
                 ))}
@@ -203,7 +205,7 @@ export default function IndexHome() {
                           className={`rounded-lg object-cover ${
                             newItem.files.length === 1 ? "w-full h-auto" : "h-28 w-full"
                           }`}
-                          src={`https://edu-file-school-file-management-and-notification-hub.vercel.app/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
+                          src={`${VITE_API_BASE_URL}/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
                           alt={`Image ${index + 1}`}
                         />
                       ) : (
@@ -276,7 +278,7 @@ export default function IndexHome() {
                           className={`rounded-lg object-cover ${
                             announcement.files.length === 1 ? "w-full h-auto" : "h-32 w-full"
                           }`}
-                          src={`https://edu-file-school-file-management-and-notification-hub.vercel.app/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
+                          src={`${VITE_API_BASE_URL}/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
                           alt={`Image ${index + 1}`}
                         />
                       )
@@ -290,7 +292,7 @@ export default function IndexHome() {
                             announcement.files.length === 1 ? "w-full h-auto flex" : "h-32 w-full"
                           }`}
                           controls
-                          src={`https://edu-file-school-file-management-and-notification-hub.vercel.app/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
+                          src={`${VITE_API_BASE_URL}/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
                           alt={`Video ${index + 1}`}
                         />
                       )
