@@ -31,7 +31,7 @@ function App() {
     <Route path="/" index element={<IndexHome/>}/>
 
       {/* Public Routes */}
-      <Route path="/login" index element={<Login />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/register" element={<RegistrationForm />} />
       <Route path="/forgot-pass" element={<ForgotPassword/>} />
       <Route path="/reset-password/:token" element={<ResetPassword/>}/>

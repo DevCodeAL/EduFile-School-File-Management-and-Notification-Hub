@@ -131,7 +131,7 @@ export default function IndexHome() {
                   <img
                     key={index}
                     className="w-full h-full object-center md:object-top rounded-md"
-                    src={`http://localhost:5000/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
+                    src={`https://edu-file-school-file-management-and-notification-hub.vercel.app/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
                     alt="Event"
                   />
                 ))}
@@ -203,7 +203,7 @@ export default function IndexHome() {
                           className={`rounded-lg object-cover ${
                             newItem.files.length === 1 ? "w-full h-auto" : "h-28 w-full"
                           }`}
-                          src={`http://localhost:5000/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
+                          src={`https://edu-file-school-file-management-and-notification-hub.vercel.app/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
                           alt={`Image ${index + 1}`}
                         />
                       ) : (
@@ -276,7 +276,7 @@ export default function IndexHome() {
                           className={`rounded-lg object-cover ${
                             announcement.files.length === 1 ? "w-full h-auto" : "h-32 w-full"
                           }`}
-                          src={`http://localhost:5000/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
+                          src={`https://edu-file-school-file-management-and-notification-hub.vercel.app/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
                           alt={`Image ${index + 1}`}
                         />
                       )
@@ -290,7 +290,7 @@ export default function IndexHome() {
                             announcement.files.length === 1 ? "w-full h-auto flex" : "h-32 w-full"
                           }`}
                           controls
-                          src={`http://localhost:5000/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
+                          src={`https://edu-file-school-file-management-and-notification-hub.vercel.app/${encodeURI(file?.metadata?.path.replace(/\\/g, "/"))}`}
                           alt={`Video ${index + 1}`}
                         />
                       )
