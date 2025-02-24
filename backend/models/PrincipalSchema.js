@@ -92,8 +92,6 @@ const TeacherSchema = new Schema({
     type: mongoose.Schema.Types.Mixed,
     default: {},
   },
-  files: [{ type: Schema.Types.ObjectId, ref: 'File' }],
-  teachers: [{ type: Schema.Types.ObjectId, ref: 'Teacher' }],
 }, {
   timestamps: true,
 });
@@ -161,9 +159,20 @@ const PrincipalSchema = new Schema({
   timestamps: true,
 });
 
+// Teachers Tranfers to Schema
+const TransferToSchema = new Schema({
+  fromPrincipal: { type: Schema.Types.ObjectId, ref: 'Principal', required: true },
+  toPrincipal: { type: Schema.Types.ObjectId, ref: 'Principal', required: true },
+  teacher: { type: Schema.Types.ObjectId, ref: 'Teacher', required: true },
+  status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" }, 
+  createdAt: { type: Date, default: Date.now },
+});
+
+
 // Models
 export const Files = mongoose.model('File', FileSchema);
 export const Teacher = mongoose.model('Teacher', TeacherSchema);
 export const PrincipalItems = mongoose.model('Principal', PrincipalSchema);
 export const NewSchedule = mongoose.model('Schedule', Schedule);
 export const NewAnnouncement = mongoose.model('Announcement', Announcement);
+export const TransferRequest = mongoose.model('TransferRequest', TransferToSchema);

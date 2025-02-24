@@ -15,6 +15,23 @@ export default function UploadedFiles() {
   const [selectedImage, setSelectedImage] = useState(null); // Store the clicked image URL
   const [selectedVideo, setIsSelectedVideo] = useState(null);
 
+
+    // Handle Download
+    const handleDownload = (file) => {
+      if (!file || !file.metadata?.path) {
+        console.error("Invalid file for download.");
+        return;
+      }
+    
+      const fileUrl = `${VITE_API_BASE_URL}/${file.metadata.path}`;
+      const link = document.createElement("a");
+      link.href = fileUrl;
+      link.download = file.filename || "downloaded_file"; // Set default filename if missing
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
   const transformToFolderStructure = (files) => {
     const structure = { name: "Learning Record Store (LRS)", subfolders: {} };
 
@@ -285,6 +302,12 @@ const handleOpenViewer = (file) => {
                     📅 {new Date(file?.uploadDate).toLocaleString() || "Unknown Time"}
                   </p>
                 </div>
+                <button
+                  onClick={() => handleDownload(file)}
+                  className="relative mt-2 bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded text-sm"
+                >
+                  ⬇️ Download
+                </button>
               </div>
             ))}
 

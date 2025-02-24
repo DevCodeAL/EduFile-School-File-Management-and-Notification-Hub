@@ -11,6 +11,7 @@ import { getUserPending } from "../../services/Api";
 import { getAllFiles } from "../../services/Api";
 import TeachersProfile from "./Modal/TeachersDetails";
 import DeleteModalTeacher from "../../Error/DeleteTeacherAlert";
+import { TransferButton } from "./Modal/TransferToButton";
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 
@@ -38,6 +39,10 @@ const PrincipalDashboard = () => {
   const [isLoading, setLoading] = useState(false);
   const [isOpen, setOpen] = useState(false);
   const [isFormOpen, setFormOpen] = useState(false); 
+  // For Transfer Modal
+  const [isTranferModal, setIsTransferModal] = useState(false);
+  const [isTranser, setIsTranfer] = useState(null);
+
 
   const [formData, setFormData] = useState({ 
     description: "", 
@@ -201,6 +206,7 @@ const PrincipalDashboard = () => {
     return null;
   };
   
+  
 
 // File submission
   const handleSubmit = async (e) => {
@@ -294,6 +300,12 @@ const HandleDeleteByTeachers = async (item)=>{
         throw error;
      }
 }
+
+// Form Tranfer To School HandleSubmit
+const HandleTranferTo = (item)=>{
+  setIsTranfer(item);
+  setIsTransferModal(true);
+};
 
 
 
@@ -703,7 +715,7 @@ const HandleDeleteByTeachers = async (item)=>{
           </tr>
         </thead>
         <tbody>
-          {isSpecificUser.map(item => (
+          {isSpecificUser?.length > 0 &&  isSpecificUser?.map(item => (
             <tr key={item._id} className="bg-white hover:bg-gray-100 transition">
               <td className="px-4 py-4 border-b">
                 <img 
@@ -732,7 +744,10 @@ const HandleDeleteByTeachers = async (item)=>{
         <span>View</span>
       </button>
 
-      <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition flex items-center space-x-2">
+      <button onClick={()=> {
+         HandleTranferTo(item)
+         setIsTransferModal(true)
+      }} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition flex items-center space-x-2">
         <FaExchangeAlt size={16} />
         <span>Transfer To</span>
       </button>
@@ -763,6 +778,14 @@ const HandleDeleteByTeachers = async (item)=>{
             onClose={()=> setOpenProfile(false)}
             item={selectedUser}
             />
+
+            {/* This modal for Tranfer Teachers */}
+            {isTranferModal &&
+             <TransferButton isOpen={isTranferModal}
+             item={isTranser}
+             onUpdate={(updateData)=> 
+              setisSpecificUser((prevData)=> prevData.map((t)=> t._id === updateData._id ? updateData : t))}
+             setClose={()=> setIsTransferModal(false)}/>}
 
             {isModalDeleteTeacher && 
             (<DeleteModalTeacher

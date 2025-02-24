@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import nodemailer from "nodemailer";
 import AdminUser, { AnnouncementFiles, EventsFilesSchema, NewsFilesSchema } from '../models/adminSchema.js';
 import authMiddleware from '../middleware/authMiddleWare.js';
-import  { Files, NewAnnouncement, NewSchedule, PrincipalItems, Teacher } from '../models/PrincipalSchema.js';
+import  { Files, NewAnnouncement, NewSchedule, PrincipalItems, Teacher, TransferRequest } from '../models/PrincipalSchema.js';
 import upload from '../middleware/uploadMiddleware.js';
 import { io } from '../server.js';
 import { sendEmailToTeachers } from '../controllers/emailService.js';
@@ -123,7 +123,6 @@ router.get('/all-users', async (req, res)=>{
   try {
     const getAllusers = await PrincipalItems.find();
 
-    
     if(!getAllusers){
       return res.status(400).json({message: 'No principal items exist!'});
     };
@@ -279,53 +278,109 @@ router.post('/register', async (req, res)=>{
 
 // Approve for Teachers
 router.put("/approve/:id", async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    try {
-        const teacher = await Teacher.findById(id);
+  try {
+      // Find teacher by ID
+      const teacher = await Teacher.findById(id);
+      if (!teacher) {
+          return res.status(404).json({ error: "Teacher not found" });
+      }
 
-        if (!teacher) {
-            return res.status(404).json({ error: "Teacher not found" });
-        }
+      // Find transfer request related to this teacher
+      const transferRequest = await TransferRequest.findOne({ teacher: id, status: "pending" });
 
-        teacher.status = "approved"; // Change status to approved
-        await teacher.save();
+      // If teacher is part of a transfer, update both teacher and transfer request status
+      if (transferRequest) {
+          transferRequest.status = "approved";
+          await transferRequest.save();
+      }
 
-        // Get all teachers' emails
-        const teachers = await Teacher.find({ role: "teacher" }).select("email");
-        const teacherEmails = teachers.map((t) => t.email); 
+      // Approve the teacher
+      teacher.status = "approved"; 
+      await teacher.save();
 
-        // Send email notifications to all teachers
-        await sendApprovalEmail(teacherEmails);
+      // Send email to only the approved teacher
+      await sendApprovalEmail([teacher.email]); 
 
-        // Emit real-time notification to all connected teachers
-        io.emit("teacherApproved", { message: `Teacher ${teacher.fullname} has been approved.` });
+      // Emit real-time notification to all connected users
+      io.emit("teacherApproved", { message: `Teacher ${teacher.fullname} has been approved.` });
 
-        res.status(200).json({ message: "Teacher approved successfully" });
-    } catch (error) {
-        console.error("Error approving teacher:", error);
-        res.status(500).json({ error: "Error approving teacher" });
-    }
+      res.status(200).json({ message: "Teacher approved successfully" });
+  } catch (error) {
+      console.error("Error approving teacher:", error);
+      res.status(500).json({ error: "Error approving teacher" });
+  }
 });
 
 
 //   Get Pending teachers
-  router.get("/pending-teachers/:principalUserId", async (req, res) => {
-    const { principalUserId } = req.params;
+router.get("/pending-teachers/:principalUserId", async (req, res) => {
+  const { principalUserId } = req.params;
+
+  try {
+    // Fetch principal and populate teachers
+    const principal = await PrincipalItems.findById(principalUserId).populate({
+      path: "teachers",
+      match: { status: "pending" }, // Get only pending teachers
+    });
+
+    // Fetch transfer requests where status is pending
+    const transferRequests = await TransferRequest.find({ status: "pending" }).populate("teacher");
+
+    if (!principal && transferRequests.length === 0) {
+      return res.status(400).json({ message: "No pending teachers found!" });
+    }
+
+    // Extract pending teachers from transfer requests
+    const transferredTeachers = transferRequests.map((transfer) => transfer.teacher);
+
+    // Merge both lists (avoid duplicates)
+    const pendingTeachers = [...new Set([...principal.teachers, ...transferredTeachers])];
+
+    res.status(200).json(pendingTeachers);
+  } catch (error) {
+    console.error("Error fetching pending teachers:", error);
+    res.status(500).json({ error: "Internal server error", details: error.message });
+  }
+});
+
+
+
+  // -------------------------------------------------------------
+  // Teachers tranfer to school
+  router.post('/tranfer-school/:id', async (req, res)=>{
     try {
-      const principal = await PrincipalItems.findById(principalUserId).populate("teachers");
 
-        if(!principal){
-            return res.status(400).json({message: 'No pending user!'});
-        }
+      const { fromPrincipalId,  toPrincipalId, teacherId } = req.body;
+      const { id } = req.params;
+      console.log('Incoming params:', req.params);
+      console.log('Incoming data: ', req.body);
+      
+      const fromPrincipal = await PrincipalItems.findById(fromPrincipalId);
+      const toPrincipal = await PrincipalItems.findById(toPrincipalId);
+      const teacher = await Teacher.findById(teacherId || id);
+  
+      if(!fromPrincipal || !toPrincipal || !teacher){
+        return res.status(404).json({ message: "Invalid principal or teacher ID" });
+      };
+  
+      const NewTransfer = new TransferRequest({
+        fromPrincipal: fromPrincipalId,
+        toPrincipal: toPrincipalId,
+        teacher: teacherId,
+        status: "pending"
+      });
+  
+      await NewTransfer.save();
+      res.status(201).json(NewTransfer);
 
-        const pendingTeachers = principal.teachers.filter(teacher => teacher.status === 'pending');
-
-      res.status(200).json(pendingTeachers);
     } catch (error) {
-      res.status(500).json({ error: "Error fetching pending teachers" });
+      console.error('Failed to update and tranfer teachers');
     }
   });
+
+
 
 
 // Reject teacher registration
@@ -360,6 +415,8 @@ router.get("/specificteachers/:id", async (req, res) => {
 
       // Fetch principal and populate teachers
       const principal = await PrincipalItems.findById(id).populate("teachers");
+
+      
 
       if (!principal) {
         return res.status(404).json({ message: "Principal not found" });
@@ -1517,6 +1574,5 @@ router.post("/reset-password-admin/:token", async (req, res) => {
     res.status(400).json({ message: "Invalid or expired token!" });
   }
 });
-
 
 export default router;

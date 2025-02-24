@@ -149,6 +149,18 @@ export const getUserPending = async (principalUserId)=>{
   }
 };
 
+// Api for teachers tranfer School
+const API_Tranfer_School = `${VITE_API_BASE_URL}/api/tranfer-school`;
+export const createTranferSchool = async (id, isFormData)=>{
+  try {
+    const response = await axios.post(`${API_Tranfer_School}/${id}`, isFormData);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to transfer school', error);
+    throw error;
+  }
+};
+
 // create Schedule
 const API_Schedule = `${VITE_API_BASE_URL}/api/schedule`;
 
