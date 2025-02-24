@@ -296,7 +296,7 @@ export const updateFiles = async (id, updateData)=>{
 };
 
 // Fetch All announcemnt from admin
-const API_AnouncementFiles = `http://localhost:5000/api/get-anouncement-files`;
+const API_AnouncementFiles = `${VITE_API_BASE_URL}/api/get-anouncement-files`;
 export const fetchAllAnnouncements = async ()=>{
   try {
     const response = await axios.get(API_AnouncementFiles);
@@ -308,7 +308,7 @@ export const fetchAllAnnouncements = async ()=>{
 };
 
 // get-news-files
-const API_NewsFiles = `http://localhost:5000/api/get-news-files`;
+const API_NewsFiles = `${VITE_API_BASE_URL}/api/get-news-files`;
 export const fetchAllNews = async ()=>{
   try {
     const response = await axios.get(API_NewsFiles);
@@ -321,7 +321,7 @@ export const fetchAllNews = async ()=>{
 
 
 // Fetch All Events Files
-const API_NewsEvents = `http://localhost:5000/api/get-events-files`;
+const API_NewsEvents = `${VITE_API_BASE_URL}/api/get-events-files`;
 export const fetchAllEvents = async ()=>{
   try {
     const response = await axios.get(API_NewsEvents);
@@ -333,7 +333,7 @@ export const fetchAllEvents = async ()=>{
 };
 
 // Get All Users
-const API_All_Users = `http://localhost:5000/api/all-users`;
+const API_All_Users = `${VITE_API_BASE_URL}/api/all-users`;
 export const getAllUsers = async()=>{
   try {
     const response = await axios.get(API_All_Users);
@@ -346,7 +346,7 @@ export const getAllUsers = async()=>{
 
 // Get All teachers 
 // all-users-teachers
-const API_All_Users_T = `http://localhost:5000/api/all-users-teachers`;
+const API_All_Users_T = `${VITE_API_BASE_URL}/api/all-users-teachers`;
 export const getAllUsersTeachers = async()=>{
   try {
     const response = await axios.get(API_All_Users_T);
