@@ -1475,7 +1475,7 @@ console.log('Incoming body:', req.body);
       from: process.env.EMAIL,
       to: user.email,
       subject: "Password Reset Request",
-      html: `<p>Click <a href="http://localhost:5173/reset-password/${token}">here</a> to reset your password.</p>`,
+      html: `<p>Click <a href="https://edu-file-school-file-management-and-notification-hub.vercel.app/reset-password/${token}">here</a> to reset your password.</p>`,
     };
 
     await transporter.sendMail(mailOptions);
@@ -1539,7 +1539,8 @@ console.log('Incoming body:', req.body);
       from: process.env.EMAIL,
       to: user.email,
       subject: "Password Reset Request",
-      html: `<p>Click <a href="http://localhost:5173/reset-password-admin/${token}">here</a> to reset your password.</p>`,
+      html: `<p>Click <a href="edu-file-school-file-management-and-notification-hub-fbfv.vercel.app
+/reset-password-admin/${token}">here</a> to reset your password.</p>`,
     };
 
     await transporter.sendMail(mailOptions);
