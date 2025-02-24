@@ -12,6 +12,9 @@ export default function ResetPassword() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  
+const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -28,7 +31,7 @@ export default function ResetPassword() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/reset-password/${token}`, {
+      const response = await fetch(`${VITE_API_BASE_URL}/api/reset-password/${token}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password, confirmPassword }),
